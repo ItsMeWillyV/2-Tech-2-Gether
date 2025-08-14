@@ -1,0 +1,3 @@
+# Allow all routes
+User-agent: *
+Allow: /
