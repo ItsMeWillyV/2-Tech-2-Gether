@@ -1,13 +1,23 @@
 @import "tailwindcss";
 
-/* CSS Custom Properties */
+/* ===== CSS CUSTOM PROPERTIES ===== */
 :root {
   --binary-blue: #00447c;
   --yaml-yellow: #FFC90D;
   --analog-aquamarine: #0E9ED5;
+  --light-gray: #f8fafc;
+  
+  /* Font families */
+  --font-primary: 'Arial Nova', Arial, sans-serif;
+  --font-heading: 'Digital Dare', 'Arial Nova', Arial, sans-serif;
+  
+  /* Gradients */
+  --gradient-hero-overlay: linear-gradient(rgba(0, 68, 124, 0.9), rgba(14, 158, 213, 0.8));
+  --gradient-event: linear-gradient(135deg, #0E9ED5 0%, #00447c 100%);
+  --gradient-cta: linear-gradient(135deg, #FFC90D 0%, #0E9ED5 100%);
 }
 
-/* Font Imports */
+/* ===== FONT IMPORTS ===== */
 @font-face {
   font-family: 'Digital Dare';
   src: url('./assets/fonts/digital-dare.ttf') format('truetype');
@@ -22,13 +32,13 @@
   font-style: normal;
 }
 
-/* Base Typography */
+/* ===== BASE TYPOGRAPHY ===== */
 body {
-  font-family: 'Arial Nova', Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Digital Dare', 'Arial Nova', Arial, sans-serif;
+  font-family: var(--font-heading);
   color: white;
   -webkit-text-stroke-width: 1px;
   -webkit-text-stroke-color: var(--analog-aquamarine);
@@ -36,9 +46,20 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 6px;
 }
 
-/* Heading Utility Classes */
+/* ===== UTILITY CLASSES ===== */
+
+/* Font Utilities */
+.font-digital-dare {
+  font-family: var(--font-heading);
+}
+
+.font-arial-nova {
+  font-family: var(--font-primary);
+}
+
+/* Heading Utilities */
 .heading-primary {
-  font-family: 'Digital Dare', 'Arial Nova', Arial, sans-serif;
+  font-family: var(--font-heading);
   color: white;
   -webkit-text-stroke-width: 1px;
   -webkit-text-stroke-color: var(--analog-aquamarine);
@@ -47,68 +68,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .heading-secondary {
-  font-family: 'Digital Dare', 'Arial Nova', Arial, sans-serif;
+  font-family: var(--font-heading);
   color: var(--binary-blue);
   letter-spacing: 2px;
 }
 
-/* Font Utility Classes */
-.font-digital-dare {
-  font-family: 'Digital Dare', 'Arial Nova', Arial, sans-serif;
-}
+/* Color Utilities */
+.bg-binary-blue { background-color: var(--binary-blue); }
+.bg-yaml-yellow { background-color: var(--yaml-yellow); }
+.bg-analog-aquamarine { background-color: var(--analog-aquamarine); }
+.bg-light-gray { background-color: var(--light-gray); }
 
-.font-arial-nova {
-  font-family: 'Arial Nova', Arial, sans-serif;
-}
+.text-binary-blue { color: var(--binary-blue); }
+.text-yaml-yellow { color: var(--yaml-yellow); }
+.text-analog-aquamarine { color: var(--analog-aquamarine); }
 
-/* Custom CSS Classes for Tech2Gether */
+/* Border Utilities */
+.border-t-analog-aquamarine { border-top-color: var(--analog-aquamarine); }
+.border-t-yaml-yellow { border-top-color: var(--yaml-yellow); }
+.border-t-binary-blue { border-top-color: var(--binary-blue); }
+.border-analog-aquamarine { border-color: var(--analog-aquamarine); }
 
-/* Color Classes */
-.bg-binary-blue {
-  background-color: #00447c;
-}
+/* Gradient Utilities */
+.bg-gradient-event { background: var(--gradient-event); }
+.bg-gradient-cta { background: var(--gradient-cta); }
 
-.bg-yaml-yellow {
-  background-color: #FFC90D;
-}
-
-.bg-analog-aquamarine {
-  background-color: #0E9ED5;
-}
-
-.text-binary-blue {
-  color: #00447c;
-}
-
-.text-yaml-yellow {
-  color: #FFC90D;
-}
-
-.text-analog-aquamarine {
-  color: #0E9ED5;
-}
-
-.bg-light-gray {
-  background-color: #f8fafc;
-}
-
-/* Hero Section */
-.hero-bg {
-  background-image: linear-gradient(rgba(0, 68, 124, 0.8), rgba(14, 158, 213, 0.7));
-}
-
+/* ===== HERO SECTION ===== */
 .hero-section {
   position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+  padding-bottom: 6rem;
 }
 
 .hero-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(rgba(0, 68, 124, 0.8), rgba(14, 158, 213, 0.7));
+  inset: 0;
+  background: var(--gradient-hero-overlay);
   z-index: 1;
 }
 
@@ -117,44 +113,26 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 2;
 }
 
-/* Border Colors */
-.border-t-analog-aquamarine {
-  border-top-color: #0E9ED5;
+/* Responsive hero adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+    padding-bottom: 8rem;
+  }
 }
 
-.border-t-yaml-yellow {
-  border-top-color: #FFC90D;
-}
-
-.border-t-binary-blue {
-  border-top-color: #00447c;
-}
-
-.border-analog-aquamarine {
-  border-color: #0E9ED5;
-}
-
-/* Gradient Backgrounds */
-.bg-gradient-event {
-  background: linear-gradient(135deg, #0E9ED5 0%, #00447c 100%);
-}
-
-.bg-gradient-cta {
-  background: linear-gradient(135deg, #FFC90D 0%, #0E9ED5 100%);
-}
-
-/* Button Styles */
+/* ===== BUTTON STYLES ===== */
 .btn-primary {
-  background-color: #FFC90D;
-  color: #00447c;
+  background-color: var(--yaml-yellow);
+  color: var(--binary-blue);
 }
 
 .btn-secondary {
-  background-color: #00447c;
+  background-color: var(--binary-blue);
   color: white;
 }
 
 .btn-event {
-  background-color: #FFC90D;
-  color: #00447c;
+  background-color: var(--yaml-yellow);
+  color: var(--binary-blue);
 }

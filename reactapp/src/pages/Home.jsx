@@ -1,45 +1,140 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaMobile, FaRocket, FaArrowRight, FaUsers, FaCalendarAlt} from 'react-icons/fa'
-import { MdDesignServices } from 'react-icons/md'
+import { FaCode, FaRocket, FaArrowRight, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaTwitter, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock} from 'react-icons/fa'
 import { IoSparkles } from 'react-icons/io5'
 import backgroundImage from '../assets/background.png'
 import tech2getherLogo from '../assets/tech2gether_logo.png'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
+import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
 import diegoPortrait from '../assets/portraits/diego_haro.png'
 import lauraPortrait from '../assets/portraits/laura_kirkpatrick.png'
 import paulPortrait from '../assets/portraits/paul_bute.png'
 import willyPortrait from '../assets/portraits/willy_vanderpool.png'
 
 function Home() {
+  const [meetings, setMeetings] = useState([]);
+  const [nextMeeting, setNextMeeting] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch meeting data on component mount
+  useEffect(() => {
+    const fetchMeetings = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/meetings.json');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const meetingsData = data.meetings || [];
+        
+        // Sort meetings by date (upcoming first)
+        const currentDate = new Date();
+        const sortedMeetings = meetingsData
+          .map(meeting => ({
+            ...meeting,
+            dateObj: new Date(meeting.date)
+          }))
+          .sort((a, b) => a.dateObj - b.dateObj);
+        
+        // Find the next upcoming meeting
+        const upcomingMeeting = sortedMeetings.find(meeting => meeting.dateObj >= currentDate);
+        
+        setMeetings(sortedMeetings);
+        setNextMeeting(upcomingMeeting);
+      } catch (err) {
+        console.error('Error fetching meetings:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeetings();
+  }, []);
+
+  const scrollToEvent = () => {
+    const eventSection = document.getElementById('upcoming-event');
+    if (eventSection) {
+      eventSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Helper function to format date for display
+  const formatEventDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Helper function to format time for display
+  const formatEventTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Helper function to get the correct thumbnail image
+  const getThumbnailImage = (thumbnailPath) => {
+    if (!thumbnailPath || thumbnailPath.includes('placeholder.png')) {
+      return placeholderThumbnail;
+    }
+    if (thumbnailPath.includes('3_26_25_thumbnail.png')) {
+      return eventThumbnail;
+    }
+    // Default to placeholder if thumbnail not found
+    return placeholderThumbnail;
+  };
+
   const teamMembers = [
     { 
       name: 'Willy Vanderpool', 
       image: willyPortrait, 
       role: 'President',
       pronouns: 'She/Her',
-      bio: "Hello there! I'm Willy Vanderpool, an 18-year-old Computer Information Science student at Ozarks Tech. I'm currently working in Ozarks Tech's Web Services department, and I'm also the president of Tech2Gether. My passion for programming started long before college, sparked by curiosity and a love for creating things from scratch. Over the years, I've gained experience with HTML, CSS, JavaScript, C#, Java, and Lua, and recently I've been diving deeper into modern frameworks such as React, TailwindCSS, and .NET MAUI. Outside of programming, some of my hobbies include drawing pixel art, playing videogames, and collecting Pokémon cards. I've also been learning German since around mid January 2025."
+      bio: "Hello there! I'm Willy Vanderpool, an 18-year-old Computer Information Science student at Ozarks Tech. I'm currently working in Ozarks Tech's Web Services department, and I'm also the president of Tech2Gether. My passion for programming started long before college, sparked by curiosity and a love for creating things from scratch. Over the years, I've gained experience with HTML, CSS, JavaScript, C#, Java, and Lua, and recently I've been diving deeper into modern frameworks such as React, TailwindCSS, and .NET MAUI. Outside of programming, some of my hobbies include drawing pixel art, playing videogames, and collecting Pokémon cards. I've also been learning German since around mid January 2025.",
+      buttons: [
+        { icon: FaGithub, label: 'GitHub', url: 'https://github.com/ItsMeWillyV' },
+        { icon: FaLinkedin, label: 'LinkedIn', url: 'https://linkedin.com/in/willy-vanderpool' },
+        { icon: FaGlobe, label: 'Website', url: 'https://willy-v.com/' }
+      ]
     },
     { 
       name: 'Paul Bute', 
       image: paulPortrait, 
       role: 'Vice President',
       pronouns: 'He/They',
-      bio: "My name is Paul Bute, and I'm a CIS student at Ozark's Tech. I'm the current Vice President of Tech2Gether. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers."
+      bio: "My name is Paul Bute, and I'm a CIS student at Ozark's Tech. I'm the current Vice President of Tech2Gether. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers.",
+      buttons: [
+      ]
     },
     { 
       name: 'Diego Haro', 
       image: diegoPortrait, 
       role: 'Developer',
       pronouns: 'He/Him',
-      bio: "Hi, I'm Diego. I've been a student at Ozarks Tech since fall 2024, and after attending a few Tech2Gether meetings, I knew I wanted to contribute my time and energy to this club. Since I've been at Ozarks Tech, I've been learning and honing my skills in C#, Python, and Web Development. I'm currently pursuing an Associate's degree in CIS, but I may switch to CSC and pursue a Bachelor's degree instead. My hobbies include weightlifting, cooking, and coding."
+      bio: "Hi, I'm Diego. I've been a student at Ozarks Tech since fall 2024, and after attending a few Tech2Gether meetings, I knew I wanted to contribute my time and energy to this club. Since I've been at Ozarks Tech, I've been learning and honing my skills in C#, Python, and Web Development. I'm currently pursuing an Associate's degree in CIS, but I may switch to CSC and pursue a Bachelor's degree instead. My hobbies include weightlifting, cooking, and coding.",
+      buttons: [
+      ]
     },
     { 
       name: 'Laura Kirkpatrick', 
       image: lauraPortrait, 
       role: 'Secretary',
       pronouns: 'She/Her',
-      bio: "Hiya! My name is Laura, and I'm the Tech2Gether secretary for the 2025-2026 school year. I'm currently working on my Associate's degree in Computer Science at Ozarks Tech. I have enjoyed all that I've learned in my time at Ozarks Tech: Python, C#, .NET MAUI, Java, and Web Development. In my free time, I love building Magic: The Gathering decks, writing/playing Dungeons and Dragons with friends, and playing/building videogames. I'll be graduating in the Spring 2026 Semester (hopefully) so look out for officer nominations in the spring to get my job! I'm so excited to help Tech2Gether continue its outreach to students by providing fun educational, networking, and programming events to members and all Ozarks Tech students alike! It's going to be a fun year."
+      bio: "Hiya! My name is Laura, and I'm the Tech2Gether secretary for the 2025-2026 school year. I'm currently working on my Associate's degree in Computer Science at Ozarks Tech. I have enjoyed all that I've learned in my time at Ozarks Tech: Python, C#, .NET MAUI, Java, and Web Development. In my free time, I love building Magic: The Gathering decks, writing/playing Dungeons and Dragons with friends, and playing/building videogames. I'll be graduating in the Spring 2026 Semester (hopefully) so look out for officer nominations in the spring to get my job! I'm so excited to help Tech2Gether continue its outreach to students by providing fun educational, networking, and programming events to members and all Ozarks Tech students alike! It's going to be a fun year.",
+      buttons: [
+      ]
     },
 
 
@@ -58,7 +153,7 @@ function Home() {
       
       {/* Hero Section */}
       <div 
-        className="hero-section-curved text-white py-32 bg-cover bg-center bg-no-repeat relative"
+        className="hero-section text-white py-32 bg-cover bg-center bg-no-repeat relative"
         style={{ 
           backgroundImage: `url(${backgroundImage})`,
         }}
@@ -77,9 +172,12 @@ function Home() {
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl opacity-95 italic mb-8 max-w-4xl mx-auto px-4">
             Where innovation meets collaboration at Ozarks Tech
           </p>
-          <button className="btn-primary text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 inline-flex items-center gap-3">
+          <button 
+            className="btn-primary text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 inline-flex items-center gap-3"
+            onClick={scrollToEvent}
+          >
             <FaUsers />
-            Join Our Community
+            Get Started
             <FaArrowRight />
           </button>
         </div>
@@ -99,29 +197,93 @@ function Home() {
         </div>
 
         {/* Upcoming Event Preview */}
-        <div className="bg-gradient-event bg-white rounded-2xl shadow-xl p-8 mb-20">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 text-white">
+        <div id="upcoming-event" className="bg-gradient-event bg-white rounded-2xl shadow-xl p-8 mb-20">
+          {loading ? (
+            <div className="text-center text-white">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-xl">Loading upcoming events...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center text-white">
+              <p className="text-xl mb-4">Unable to load event data</p>
+              <p className="text-sm opacity-75">Error: {error}</p>
+            </div>
+          ) : nextMeeting ? (
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 text-white">
+                <h3 className="text-3xl font-bold mb-4">
+                  <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
+                  Next Event: {formatEventDate(nextMeeting.date)}
+                </h3>
+                <h4 className="text-2xl font-semibold mb-3">
+                  {nextMeeting.title}
+                </h4>
+                {nextMeeting.speaker && (
+                  <p className="text-lg mb-2 opacity-90">
+                    <strong>Speaker:</strong> {nextMeeting.speaker}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                  {nextMeeting.location && (
+                    <span className="flex items-center gap-1">
+                      <FaMapMarkerAlt className="text-yaml-yellow" />
+                      {nextMeeting.location}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <FaClock className="text-yaml-yellow" />
+                    {formatEventTime(nextMeeting.date)}
+                  </span>
+                </div>
+                <div 
+                  className="text-base mb-6 opacity-95 leading-relaxed"
+                  dangerouslySetInnerHTML={{ 
+                    __html: nextMeeting.description 
+                  }}
+                />
+                {nextMeeting.schedule && (
+                  <div className="mb-6 p-3 bg-black bg-opacity-20 rounded-lg">
+                    <h5 className="font-semibold mb-2">Schedule:</h5>
+                    <div 
+                      className="text-sm opacity-90"
+                      dangerouslySetInnerHTML={{ __html: nextMeeting.schedule }}
+                    />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  {nextMeeting.buttons && nextMeeting.buttons.map((button, index) => (
+                    <a
+                      key={index}
+                      href={button.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+                    >
+                      {button.text}
+                      <FaExternalLinkAlt className="text-sm" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <img 
+                  src={getThumbnailImage(nextMeeting.thumbnail)} 
+                  alt={nextMeeting.title} 
+                  className="w-64 h-40 object-contain rounded-xl"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-white">
               <h3 className="text-3xl font-bold mb-4">
                 <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
-                Next Event: March 26, 2025
+                No Upcoming Events
               </h3>
               <p className="text-xl mb-6 opacity-95">
-                Join us for our upcoming workshop on modern web development. 
-                Free pizza, great conversations, and hands-on learning!
+                Stay tuned for announcements about our next meeting!
               </p>
-              <button className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105">
-                Register Now
-              </button>
             </div>
-            <div className="flex-shrink-0">
-              <img 
-                src={eventThumbnail} 
-                alt="March 26 Event" 
-                className="w-64 h-40 object-cover rounded-xl shadow-lg"
-              />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Features Grid */}
@@ -131,11 +293,10 @@ function Home() {
               <FaCode className="text-5xl text-analog-aquamarine" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              Learn & Code
+              aaaaa
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              Hands-on workshops and coding sessions to enhance your programming skills 
-              across various technologies and frameworks.
+              aaaaa
             </p>
           </div>
           
@@ -144,11 +305,10 @@ function Home() {
               <FaUsers className="text-5xl text-yaml-yellow" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              Network & Connect
+              aaaaa
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              Build meaningful connections with fellow tech enthusiasts, 
-              industry professionals, and potential collaborators.
+              aaaaa
             </p>
           </div>
           
@@ -157,11 +317,10 @@ function Home() {
               <FaRocket className="text-5xl text-binary-blue" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              Innovate & Create
+              aaaaa
             </h3>
             <p className="text-gray-600 text-center leading-relaxed">
-              Collaborate on exciting projects, participate in hackathons, 
-              and bring your innovative ideas to life.
+              aaaaa
             </p>
           </div>
         </div>
@@ -174,10 +333,10 @@ function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-8">
             {teamMembers.map((member, index) => (
               <div key={index} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
                   <div className="flex-shrink-0">
                     <img 
                       src={member.image} 
@@ -185,7 +344,7 @@ function Home() {
                       className="w-32 h-32 rounded-full object-cover shadow-lg border-4 border border-analog-aquamarine"
                     />
                   </div>
-                  <div className="flex-1 text-center md:text-left">
+                  <div className="flex-1 text-center lg:text-left">
                     <h4 className="text-2xl font-bold mb-2 text-binary-blue">
                       {member.name}
                     </h4>
@@ -193,9 +352,26 @@ function Home() {
                     <p className="text-lg text-analog-aquamarine font-medium mb-4">
                       {member.role}
                     </p>
-                    <p className="text-gray-700 leading-relaxed">
+                    <p className="text-gray-700 leading-relaxed mb-6">
                       {member.bio}
                     </p>
+                    {member.buttons && (
+                      <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+                        {member.buttons.map((button, buttonIndex) => (
+                          <a
+                            key={buttonIndex}
+                            href={button.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-yaml-yellow text-binary-blue rounded-lg hover:bg-analog-aquamarine transition-all duration-300 hover:scale-105 text-sm font-medium"
+                          >
+                            <button.icon className="text-lg" />
+                            {button.label}
+                            <FaExternalLinkAlt className="text-xs" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -203,21 +379,99 @@ function Home() {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-cta text-center bg-white rounded-2xl shadow-xl p-12">
-          <h2 className="text-4xl font-bold mb-6 text-white">
-            Ready to Join the Tech Revolution?
-          </h2>
-          <p className="text-xl text-white opacity-95 mb-8 max-w-2xl mx-auto">
-            Be part of a community that's shaping the future of technology. 
-            Connect, learn, and grow with us!
-          </p>
-          <button className="btn-secondary px-10 py-4 rounded-xl text-xl font-bold transition-all duration-300 hover:shadow-xl hover:scale-105 inline-flex items-center gap-3">
-            <IoSparkles />
-            Get Started Today
-            <FaArrowRight />
-          </button>
-        </div>
+        {/* All Meetings Section */}
+        {!loading && !error && meetings.length > 0 && (
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-20 px-4 rounded-3xl mb-20 shadow-inner">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-6 text-binary-blue">
+                All Meetings & Events
+              </h2>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+                Check out our complete schedule of events and workshops
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {meetings.slice(1).reverse().map((meeting, index) => {
+                const isPast = meeting.dateObj < new Date();
+                const isUpcoming = meeting === nextMeeting;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 ${
+                      isUpcoming ? 'ring-2 ring-yaml-yellow' : ''
+                    } ${isPast ? 'opacity-75' : ''}`}
+                  >
+                    {isUpcoming && (
+                      <div className="bg-yaml-yellow text-binary-blue px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
+                        Next Event
+                      </div>
+                    )}
+                    
+                    <div className="mb-4">
+                      <img 
+                        src={getThumbnailImage(meeting.thumbnail)} 
+                        alt={meeting.title} 
+                        className="w-full h-32 object-contain rounded-lg shadow-inner"
+                      />
+                    </div>
+                    
+                    <h4 className="text-xl font-bold mb-2 text-binary-blue">
+                      {meeting.title}
+                    </h4>
+                    
+                    <div className="text-sm text-gray-600 mb-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <FaCalendarAlt className="text-analog-aquamarine" />
+                        {formatEventDate(meeting.date)}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaClock className="text-analog-aquamarine" />
+                        {formatEventTime(meeting.date)}
+                      </div>
+                      {meeting.location && (
+                        <div className="flex items-center gap-2">
+                          <FaMapMarkerAlt className="text-analog-aquamarine" />
+                          {meeting.location}
+                        </div>
+                      )}
+                      {meeting.speaker && (
+                        <div className="text-gray-700">
+                          <strong>Speaker:</strong> {meeting.speaker}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div 
+                      className="text-gray-700 text-sm mb-4 leading-relaxed"
+                      dangerouslySetInnerHTML={{ 
+                        __html: meeting.description 
+                      }}
+                    />
+                    
+                    {meeting.buttons && meeting.buttons.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {meeting.buttons.map((button, buttonIndex) => (
+                          <a
+                            key={buttonIndex}
+                            href={button.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-analog-aquamarine text-white rounded-lg hover:bg-binary-blue transition-all duration-300 hover:scale-105 text-xs font-medium"
+                          >
+                            {button.text}
+                            <FaExternalLinkAlt className="text-xs" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

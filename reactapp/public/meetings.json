@@ -1,0 +1,68 @@
+{
+  "meetings": [
+    {
+      "title": "TBA",
+      "thumbnail": "img/thumbnails/placeholder.png",
+      "date": "Jan 1 1985 18:00:00 GMT-0500",
+      "speaker": "TBA",
+      "description": "Soon™",
+      "location": "TBA",
+      "schedule": "",
+      "buttons": []
+    },
+    {
+      "title": "Sharp Security from All Angles",
+      "thumbnail": "img/thumbnails/3_26_25_thumbnail.png",
+      "date": "Mar 26 2025 18:00:00 GMT-0500",
+      "speaker": "Tiffany Ford",
+      "description": "This workshop is a scaled-down version of the Secure From Scratch presentation I attended at Defcon 32 in August 2024. We will look at a .NET Core 8 / Angular 17 application and discuss security vulnerabilities, learn how attackers think about exploitation and how you can think securely about your applications. \u003Cbr\u003E\u003Cbr\u003E Attendees who want to work along with me during the workshop will need to get the application running on their laptops before the session. Instructions available in the GitHub repository for the test application.",
+      "location": "PMC 232",
+      "schedule": "6:00 PM - Pizza and Networking \u003Cbr\u003E 6:30 PM - Workshop Begins",
+      "buttons": [
+        {
+          "text": "RSVP",
+          "link": "https://forms.office.com/r/cVXTmy5CEj"
+        },
+        {
+          "text": "GitHub Repo",
+          "link": "https://github.com/rhysma/Secure_Angular/"
+        }
+      ]
+    },
+    {
+      "title": "Catching up with Competitions",
+      "thumbnail": "img/thumbnails/placeholder.png",
+      "date": "Apr 16 2025 18:00:00 GMT-0500",
+      "speaker": "Various Student Presenters",
+      "description": "OTC Students will be presenting on their experience at competitions such as CCDC & CCSC. There will be updates about any students who competed at SkillsUSA and are going on to nationals. There will also be a short pitch from Officer Candidates. More information coming soon.",
+      "location": "PMC 232",
+      "schedule": "6:00 PM - Pizza and Networking \u003Cbr\u003E 6:30 PM - Meeting Begins",
+      "buttons": [
+        {
+          "text": "RSVP",
+          "link": "https://forms.office.com/Pages/ResponsePage.aspx?id=drq33vxyB0yDPxYotekhaNhghODwk3NEh9FML_kcXP9UQTBXNDZSQVZRQk9LU1VWVTBLUkdZVTZYUS4u"
+        }
+      ]
+    },
+    {
+      "title": "End of Semester Party",
+      "thumbnail": "img/thumbnails/placeholder.png",
+      "date": "May 6 2025 18:00:00 GMT-0500",
+      "speaker": "Potluck + Games",
+      "description": "Join us for our end of semester party! Bring a dish to share and your favorite board game. Please note that pizza will not be provided, and no registration is required. \u003Cbr\u003E\u003Cbr\u003EAdditionally, we will be announcing the winners of the Officer elections. Don't forget to vote!\u003Cbr\u003E\u003Cbr\u003ENote: Due to a class being held in PMC 232, we will be meeting in PMC 161.",
+      "location": "PMC 161",
+      "schedule": "6:00 PM - Potluck + Games",
+      "buttons": []
+    },
+    {
+      "title": "Welcome Back Party",
+      "thumbnail": "img/thumbnails/placeholder.png",
+      "date": "August 27 2025 17:00:00 GMT-0500",
+      "speaker": "",
+      "description": "Hey friends! We're getting 2Gether in PMC-232 at 5:00 PM on Wednesday, August 27th!\u003Cbr\u003E\u003Cbr\u003EWhether you're new to Tech2Gether or a returning member, this is the perfect chance to:\u003Cbr\u003E\u003Cbr\u003E✨ Meet other tech-minded students\u003Cbr\u003E✨ Learn about what we're planning for this semester\u003Cbr\u003E✨ Share your ideas + hang out\u003Cbr\u003E✨ See how you can contribute (we’re especially looking for folks to join the Website Team!)\u003Cbr\u003E\u003Cbr\u003ENo experience or RSVP needed - just bring yourself\u003Cbr\u003EHope to see you there!",
+      "location": "PMC 232",
+      "schedule": "5:00 PM - Meeting starts",
+      "buttons": []
+    }
+  ]
+}
