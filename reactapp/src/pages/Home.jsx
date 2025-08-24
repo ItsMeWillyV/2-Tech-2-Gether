@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaRocket, FaArrowRight, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaTwitter, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock} from 'react-icons/fa'
-import { IoSparkles } from 'react-icons/io5'
+import { FaCode, FaRocket, FaArrowRight, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock} from 'react-icons/fa'
 import backgroundImage from '../assets/background.png'
 import tech2getherLogo from '../assets/tech2gether_logo.png'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
@@ -116,6 +115,7 @@ function Home() {
       pronouns: 'He/They',
       bio: "My name is Paul Bute, and I'm a CIS student at Ozark's Tech. I'm the current Vice President of Tech2Gether. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers.",
       buttons: [
+        { icon: FaGithub, label: 'GitHub', url: 'https://github.com/Smashslice'}
       ]
     },
     { 
@@ -163,7 +163,7 @@ function Home() {
             <img 
               src={tech2getherLogo} 
               alt="Tech2Gether Logo" 
-              className="h-24 w-auto animate-pulse"
+              className="h-40 w-auto"
             />
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 tracking-tight">
@@ -187,7 +187,7 @@ function Home() {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-6 text-binary-blue">
-            What is Tech2Gether?
+            What is Tech&#8203;2&#8203;Gether?
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             Tech2Gether is the tech club at Ozarks Technical Community College (Ozarks Tech). 
@@ -381,12 +381,12 @@ function Home() {
 
         {/* All Meetings Section */}
         {!loading && !error && meetings.length > 0 && (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-20 px-4 rounded-3xl mb-20 shadow-inner">
+          <div className="bg-gradient-event py-20 px-4 rounded-3xl mb-20 shadow-inner">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-6 text-binary-blue">
-                All Meetings & Events
+              <h2 className="text-4xl font-bold mb-6 text-white">
+                All Meetings
               </h2>
-              <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              <p className="text-xl text-white opacity-90 max-w-3xl mx-auto">
                 Check out our complete schedule of events and workshops
               </p>
             </div>
