@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaUser, FaSearch} from 'react-icons/fa'
 import Hero from '../components/Hero'
+import Card from '../components/Card'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
 import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
 import diegoPortrait from '../assets/portraits/diego_haro.png'
@@ -345,59 +346,47 @@ function Home() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-10 mb-20">
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-analog-aquamarine flex flex-col h-full">
-            <div className="flex justify-center mb-6">
-              <FaCode className="text-5xl text-analog-aquamarine" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              Hack2Gether
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
-              Coming in the Spring Semester—stay tuned for more info!
-            </p>
-            <div className="flex justify-center mt-auto">
-              <a href='/events#hackathon' className="inline-flex items-center gap-2 px-6 py-3 bg-analog-aquamarine text-white rounded-lg hover:bg-binary-blue transition-all duration-300 hover:scale-105 font-medium">
-                <FaRocket className="text-lg" />
-                Learn More
-              </a>
-            </div>
-          </div>
+          <Card
+            icon={FaUsers}
+            iconColor="text-yaml-yellow"
+            title="Cyber Heist"
+            description="Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD."
+            borderColor="border-t-yaml-yellow"
+            button={{
+              text: "View Event",
+              href: "/events#ctf",
+              icon: FaSearch,
+              className: "bg-yaml-yellow text-binary-blue hover:bg-analog-aquamarine hover:text-white"
+            }}
+          />
+          <Card
+            icon={FaCode}
+            iconColor="text-analog-aquamarine"
+            title="Hack2Gether"
+            description="Coming in the Spring Semester—stay tuned for more info!"
+            borderColor="border-t-analog-aquamarine"
+            button={{
+              text: "Learn More",
+              href: "/events#hackathon",
+              icon: FaRocket,
+              className: "bg-analog-aquamarine text-white hover:bg-binary-blue"
+            }}
+          />
           
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-yaml-yellow flex flex-col h-full">
-            <div className="flex justify-center mb-6">
-              <FaUsers className="text-5xl text-yaml-yellow" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-             Cyber Heist
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
-              Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD.
-            </p>
-            <div className="flex justify-center mt-auto">
-              <a href='/events#ctf' className="inline-flex items-center gap-2 px-6 py-3 bg-yaml-yellow text-binary-blue rounded-lg hover:bg-analog-aquamarine hover:text-white transition-all duration-300 hover:scale-105 font-medium">
-                <FaSearch className="text-lg" />
-                View Event
-              </a>
-            </div>
-          </div>
-          
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-binary-blue flex flex-col h-full">
-            <div className="flex justify-center mb-6">
-              <FaGlobe className="text-5xl text-binary-blue" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              Join the Website Team today!
-            </h3>
-            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
-              Like what you see and want to contribute? Talk to Willy, Paul, and Laura on Teams to find out how to join the Website Team!
-            </p>
-            <div className="flex justify-center mt-auto">
-              <a href="https://teams.microsoft.com/l/chat/0/0?users=butep@otc.edu,lk1012349@otc.edu" target='_blank' className="inline-flex items-center gap-2 px-6 py-3 bg-binary-blue text-white rounded-lg hover:bg-analog-aquamarine transition-all duration-300 hover:scale-105 font-medium">
-                <FaUsers className="text-lg" />
-                Contact Us
-              </a>
-            </div>
-          </div>
+          <Card
+            icon={FaGlobe}
+            iconColor="text-binary-blue"
+            title="Join the Website Team today!"
+            description="Like what you see and want to contribute? Talk to Willy, Paul, and Laura on Teams to find out how to join the Website Team!"
+            borderColor="border-t-binary-blue"
+            button={{
+              text: "Contact Us",
+              href: "https://teams.microsoft.com/l/chat/0/0?users=butep@otc.edu,lk1012349@otc.edu",
+              icon: FaUsers,
+              external: true,
+              className: "bg-binary-blue text-white hover:bg-analog-aquamarine"
+            }}
+          />
         </div>
 
         {/* Team Section */}

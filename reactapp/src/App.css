@@ -55,6 +55,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .font-arial-nova {
   font-family: var(--font-primary);
+  color: initial;
+  -webkit-text-stroke-width: initial;
+  -webkit-text-stroke-color: initial;
+  text-shadow: initial;
+  letter-spacing: initial;
 }
 
 /* Heading Utilities */

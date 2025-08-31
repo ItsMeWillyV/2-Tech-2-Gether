@@ -5,6 +5,8 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import Sponsors from './pages/Sponsors'
 import ComingSoon from './pages/ComingSoon'
+// import CaptureTheFlag from './pages/CaptureTheFlag'
+import Events from './pages/Events'
 
 function App() {
   return (
@@ -12,7 +14,8 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/events" element={<ComingSoon />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/events/capture-the-flag" element={<ComingSoon />} />
         <Route path="/sponsors" element={<Sponsors />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
