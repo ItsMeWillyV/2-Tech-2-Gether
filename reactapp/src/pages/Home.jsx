@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaUser} from 'react-icons/fa'
+import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaUser, FaSearch} from 'react-icons/fa'
 import Hero from '../components/Hero'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
 import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
@@ -72,6 +72,11 @@ function Home() {
     fetchMeetings();
   }, []);
 
+  // Ensure title updates when component mounts
+  useEffect(() => {
+    document.title = 'Tech2Gether - Free Pizza and Networking';
+  }, []);
+
   // Helper function to format date for display
   const formatEventDate = (dateString) => {
     const date = new Date(dateString);
@@ -123,7 +128,7 @@ function Home() {
       image: paulPortrait, 
       role: 'Vice President',
       pronouns: 'He/They',
-      bio: "My name is Paul Bute, and I'm a CIS student at Ozark's Tech. I'm the current Vice President of Tech2Gether. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers.",
+      bio: "My name is Paul Bute, and I'm a CIS student at Ozarks Tech. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers.",
       buttons: [
         { icon: FaGithub, label: 'GitHub', url: 'https://github.com/Smashslice'}
       ]
@@ -144,13 +149,15 @@ function Home() {
       pronouns: 'She/Her',
       bio: "Hiya! My name is Laura, and I'm the Tech2Gether secretary for the 2025-2026 school year. I'm currently working on my Associate's degree in Computer Science at Ozarks Tech. I have enjoyed all that I've learned in my time at Ozarks Tech: Python, C#, .NET MAUI, Java, and Web Development. In my free time, I love building Magic: The Gathering decks, writing/playing Dungeons and Dragons with friends, and playing/building videogames. I'll be graduating in the Spring 2026 Semester (hopefully) so look out for officer nominations in the spring to get my job! I'm so excited to help Tech2Gether continue its outreach to students by providing fun educational, networking, and programming events to members and all Ozarks Tech students alike! It's going to be a fun year.",
       buttons: [
+        { icon: FaGithub, label: 'GitHub', url: 'https://github.com/Fruity-Patoootie' },
+        { icon: FaLinkedin, label: 'LinkedIn', url: 'https://www.linkedin.com/in/laura-kirkpatrick-3a4895381/' }
       ]
     },
   ]
 
   return (
     <div className="min-h-screen bg-light-gray">
-      <Helmet>
+      <Helmet key="home-helmet">
         <title>Tech2Gether - Free Pizza and Networking</title>
         <meta name="description" content="Join our vibrant tech community for networking, learning, and innovation at Ozarks Tech" />
         <meta name="keywords" content="Ozarks Tech, Club, Community, Meetup, Technology, Programming" />
@@ -346,10 +353,10 @@ function Home() {
               Hack2Gether
             </h3>
             <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
-              Coming in the Spring Semester, stay tuned for more info!
+              Coming in the Spring Semester—stay tuned for more info!
             </p>
             <div className="flex justify-center mt-auto">
-              <a href='/events/#hackathon' className="inline-flex items-center gap-2 px-6 py-3 bg-analog-aquamarine text-white rounded-lg hover:bg-binary-blue transition-all duration-300 hover:scale-105 font-medium">
+              <a href='/events#hackathon' className="inline-flex items-center gap-2 px-6 py-3 bg-analog-aquamarine text-white rounded-lg hover:bg-binary-blue transition-all duration-300 hover:scale-105 font-medium">
                 <FaRocket className="text-lg" />
                 Learn More
               </a>
@@ -367,8 +374,8 @@ function Home() {
               Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD.
             </p>
             <div className="flex justify-center mt-auto">
-              <a href='/events/#ctf' className="inline-flex items-center gap-2 px-6 py-3 bg-yaml-yellow text-binary-blue rounded-lg hover:bg-analog-aquamarine hover:text-white transition-all duration-300 hover:scale-105 font-medium">
-                <FaUser className="text-lg" />
+              <a href='/events#ctf' className="inline-flex items-center gap-2 px-6 py-3 bg-yaml-yellow text-binary-blue rounded-lg hover:bg-analog-aquamarine hover:text-white transition-all duration-300 hover:scale-105 font-medium">
+                <FaSearch className="text-lg" />
                 View Event
               </a>
             </div>
@@ -382,7 +389,7 @@ function Home() {
               Join the Website Team today!
             </h3>
             <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
-              Like what you see and want to contribute? Talk to Paul or Laura on Teams to find out how to join the Website Team!
+              Like what you see and want to contribute? Talk to Willy, Paul, and Laura on Teams to find out how to join the Website Team!
             </p>
             <div className="flex justify-center mt-auto">
               <a href="https://teams.microsoft.com/l/chat/0/0?users=butep@otc.edu,lk1012349@otc.edu" target='_blank' className="inline-flex items-center gap-2 px-6 py-3 bg-binary-blue text-white rounded-lg hover:bg-analog-aquamarine transition-all duration-300 hover:scale-105 font-medium">
@@ -455,7 +462,7 @@ function Home() {
                 All Meetings
               </h2>
               <p className="text-xl text-white opacity-90 max-w-3xl mx-auto">
-                Check out our complete schedule of events and workshops
+                Check out our complete schedule of meetings and workshops
               </p>
             </div>
 
@@ -483,6 +490,11 @@ function Home() {
                     {isUpcoming && !isOngoing && (
                       <div className="bg-yaml-yellow text-binary-blue px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
                         Next Event
+                      </div>
+                    )}
+                    {isPast && !isOngoing && !isUpcoming && (
+                      <div className="bg-gray-500 text-white px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
+                        Previous Event
                       </div>
                     )}
                     <div className="mb-4">

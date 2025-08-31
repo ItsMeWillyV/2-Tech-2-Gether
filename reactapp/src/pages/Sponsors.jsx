@@ -1,8 +1,14 @@
+import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FaTrophy, FaMedal, FaAward, FaExternalLinkAlt, FaUsers } from 'react-icons/fa'
 import Hero from '../components/Hero'
 
 function Sponsors() {
+  // Ensure title updates when component mounts
+  useEffect(() => {
+    document.title = 'Sponsors - Tech2Gether';
+  }, []);
+
   const sponsorTiers = [
     {
       name: 'Bronze',
@@ -39,7 +45,7 @@ function Sponsors() {
 
   return (
     <div className="min-h-screen bg-light-gray">
-      <Helmet>
+      <Helmet key="sponsors-helmet">
         <title>Sponsors - Tech2Gether</title>
         <meta name="description" content="Support Tech2Gether and connect with talented tech students at Ozarks Tech" />
         <meta name="keywords" content="Tech2Gether, Sponsors, Ozarks Tech, Technology, Programming, Partnership" />

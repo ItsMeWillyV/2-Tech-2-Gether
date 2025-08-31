@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { FaHome, FaCode, FaRocket, FaCog, FaClock } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
 import '../App.css'
@@ -20,6 +21,11 @@ function ComingSoon() {
 
   const [currentMessage, setCurrentMessage] = useState('');
 
+  // Ensure title updates when component mounts
+  useEffect(() => {
+    document.title = 'Coming Soon - Tech2Gether';
+  }, []);
+
   // Set random message on component mount and update every 5 seconds
   useEffect(() => {
     const updateMessage = () => {
@@ -36,6 +42,15 @@ function ComingSoon() {
 
   return (
     <div className="not-found-container">
+      <Helmet key="coming-soon-helmet">
+        <title>Coming Soon - Tech2Gether</title>
+        <meta name="description" content="This page is coming soon. Check back later for updates!" />
+        <meta name="keywords" content="Tech2Gether, Coming Soon, Events, Ozarks Tech" />
+        <meta property="og:title" content="Coming Soon - Tech2Gether" />
+        <meta property="og:description" content="This page is coming soon. Check back later for updates!" />
+        <meta property="og:type" content="website" />
+      </Helmet>
+      
       <div className="not-found-background-elements">
         <div className="floating-code">{'<>'}</div>
         <div className="floating-code">{'</>'}</div>
