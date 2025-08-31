@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaRocket, FaArrowRight, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock} from 'react-icons/fa'
-import backgroundImage from '../assets/background.png'
-import tech2getherLogo from '../assets/tech2gether_logo.png'
+import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaUser} from 'react-icons/fa'
+import Hero from '../components/Hero'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
 import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
 import diegoPortrait from '../assets/portraits/diego_haro.png'
@@ -13,6 +12,7 @@ import willyPortrait from '../assets/portraits/willy_vanderpool.png'
 function Home() {
   const [meetings, setMeetings] = useState([]);
   const [nextMeeting, setNextMeeting] = useState(null);
+  const [ongoingMeeting, setOngoingMeeting] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -35,15 +35,32 @@ function Home() {
         const sortedMeetings = meetingsData
           .map(meeting => ({
             ...meeting,
-            dateObj: new Date(meeting.date)
+            dateObj: new Date(meeting.date),
+            endDateObj: meeting.endDate ? new Date(meeting.endDate) : null
           }))
           .sort((a, b) => a.dateObj - b.dateObj);
-        
-        // Find the next upcoming meeting
-        const upcomingMeeting = sortedMeetings.find(meeting => meeting.dateObj >= currentDate);
-        
+
+        // Find ongoing meeting (meeting that is currently happening)
+        const ongoing = sortedMeetings.find(meeting => {
+          if (meeting.endDateObj) {
+            return meeting.dateObj <= currentDate && currentDate <= meeting.endDateObj;
+          }
+          // If no endDate, treat as single-day event, but only after start time
+          return (
+            meeting.dateObj.toDateString() === currentDate.toDateString() &&
+            meeting.dateObj <= currentDate
+          );
+        });
+
+        // Find the next upcoming meeting (not ongoing)
+        const upcomingMeeting = sortedMeetings.find(meeting => {
+          if (ongoing && meeting === ongoing) return false;
+          return meeting.dateObj >= currentDate;
+        });
+
         setMeetings(sortedMeetings);
-        setNextMeeting(upcomingMeeting);
+        setOngoingMeeting(ongoing || null);
+        setNextMeeting(upcomingMeeting || null);
       } catch (err) {
         console.error('Error fetching meetings:', err);
         setError(err.message);
@@ -54,13 +71,6 @@ function Home() {
 
     fetchMeetings();
   }, []);
-
-  const scrollToEvent = () => {
-    const eventSection = document.getElementById('upcoming-event');
-    if (eventSection) {
-      eventSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   // Helper function to format date for display
   const formatEventDate = (dateString) => {
@@ -121,7 +131,7 @@ function Home() {
     { 
       name: 'Diego Haro', 
       image: diegoPortrait, 
-      role: 'Developer',
+      role: 'Treasurer',
       pronouns: 'He/Him',
       bio: "Hi, I'm Diego. I've been a student at Ozarks Tech since fall 2024, and after attending a few Tech2Gether meetings, I knew I wanted to contribute my time and energy to this club. Since I've been at Ozarks Tech, I've been learning and honing my skills in C#, Python, and Web Development. I'm currently pursuing an Associate's degree in CIS, but I may switch to CSC and pursue a Bachelor's degree instead. My hobbies include weightlifting, cooking, and coding.",
       buttons: [
@@ -136,52 +146,21 @@ function Home() {
       buttons: [
       ]
     },
-
-
   ]
 
   return (
     <div className="min-h-screen bg-light-gray">
       <Helmet>
-        <title>Tech2Gether - Connecting Tech Minds</title>
+        <title>Tech2Gether - Free Pizza and Networking</title>
         <meta name="description" content="Join our vibrant tech community for networking, learning, and innovation at Ozarks Tech" />
         <meta name="keywords" content="Ozarks Tech, Club, Community, Meetup, Technology, Programming" />
-        <meta property="og:title" content="Tech2Gether - Home" />
-        <meta property="og:description" content="Connecting Tech Minds at Ozarks Tech" />
+        <meta property="og:title" content="Tech2Gether - Free Pizza and Networking" />
+        <meta property="og:description" content="Join our vibrant tech community for networking, learning, and innovation at Ozarks Tech" />
         <meta property="og:type" content="website" />
       </Helmet>
       
       {/* Hero Section */}
-      <div 
-        className="hero-section text-white py-32 bg-cover bg-center bg-no-repeat relative"
-        style={{ 
-          backgroundImage: `url(${backgroundImage})`,
-        }}
-      >
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <div className="flex justify-center mb-6">
-            <img 
-              src={tech2getherLogo} 
-              alt="Tech2Gether Logo" 
-              className="h-40 w-auto"
-            />
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 tracking-tight">
-            <span>Tech2Gether</span>
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl opacity-95 italic mb-8 max-w-4xl mx-auto px-4">
-            Where innovation meets collaboration at Ozarks Tech
-          </p>
-          <button 
-            className="btn-primary text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105 inline-flex items-center gap-3"
-            onClick={scrollToEvent}
-          >
-            <FaUsers />
-            Get Started
-            <FaArrowRight />
-          </button>
-        </div>
-      </div>
+      <Hero/>     
 
       {/* About Section */}
       <div className="container mx-auto px-4 py-20 relative z-10">
@@ -207,6 +186,77 @@ function Home() {
             <div className="text-center text-white">
               <p className="text-xl mb-4">Unable to load event data</p>
               <p className="text-sm opacity-75">Error: {error}</p>
+            </div>
+          ) : ongoingMeeting ? (
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1 text-white">
+                <h3 className="text-3xl font-bold mb-4">
+                  <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
+                  Ongoing Event: {formatEventDate(ongoingMeeting.date)}
+                </h3>
+                <h4 className="text-2xl font-semibold mb-3">
+                  {ongoingMeeting.title}
+                </h4>
+                {ongoingMeeting.speaker && (
+                  <p className="text-lg mb-2 opacity-90">
+                    <strong>Speaker:</strong> {ongoingMeeting.speaker}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                  {ongoingMeeting.location && (
+                    <span className="flex items-center gap-1">
+                      <FaMapMarkerAlt className="text-yaml-yellow" />
+                      {ongoingMeeting.location}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <FaClock className="text-yaml-yellow" />
+                    {formatEventTime(ongoingMeeting.date)}
+                  </span>
+                  {ongoingMeeting.endDate && (
+                    <span className="flex items-center gap-1">
+                      <FaClock className="text-yaml-yellow" />
+                      Ends: {formatEventTime(ongoingMeeting.endDate)}
+                    </span>
+                  )}
+                </div>
+                <div 
+                  className="text-base mb-6 opacity-95 leading-relaxed"
+                  dangerouslySetInnerHTML={{ 
+                    __html: ongoingMeeting.description 
+                  }}
+                />
+                {ongoingMeeting.schedule && (
+                  <div className="mb-6 p-3 bg-black bg-opacity-20 rounded-lg">
+                    <h5 className="font-semibold mb-2">Schedule:</h5>
+                    <div 
+                      className="text-sm opacity-90"
+                      dangerouslySetInnerHTML={{ __html: ongoingMeeting.schedule }}
+                    />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  {ongoingMeeting.buttons && ongoingMeeting.buttons.map((button, index) => (
+                    <a
+                      key={index}
+                      href={button.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+                    >
+                      {button.text}
+                      <FaExternalLinkAlt className="text-sm" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <img 
+                  src={getThumbnailImage(ongoingMeeting.thumbnail)} 
+                  alt={ongoingMeeting.title} 
+                  className="w-64 h-40 object-contain rounded-xl"
+                />
+              </div>
             </div>
           ) : nextMeeting ? (
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -288,40 +338,58 @@ function Home() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-10 mb-20">
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-analog-aquamarine">
+          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-analog-aquamarine flex flex-col h-full">
             <div className="flex justify-center mb-6">
               <FaCode className="text-5xl text-analog-aquamarine" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              aaaaa
+              Hack2Gether
             </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              aaaaa
+            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
+              Coming in the Spring Semester, stay tuned for more info!
             </p>
+            <div className="flex justify-center mt-auto">
+              <a href='/events/#hackathon' className="inline-flex items-center gap-2 px-6 py-3 bg-analog-aquamarine text-white rounded-lg hover:bg-binary-blue transition-all duration-300 hover:scale-105 font-medium">
+                <FaRocket className="text-lg" />
+                Learn More
+              </a>
+            </div>
           </div>
           
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-yaml-yellow">
+          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-yaml-yellow flex flex-col h-full">
             <div className="flex justify-center mb-6">
               <FaUsers className="text-5xl text-yaml-yellow" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              aaaaa
+             Cyber Heist
             </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              aaaaa
+            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
+              Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD.
             </p>
+            <div className="flex justify-center mt-auto">
+              <a href='/events/#ctf' className="inline-flex items-center gap-2 px-6 py-3 bg-yaml-yellow text-binary-blue rounded-lg hover:bg-analog-aquamarine hover:text-white transition-all duration-300 hover:scale-105 font-medium">
+                <FaUser className="text-lg" />
+                View Event
+              </a>
+            </div>
           </div>
           
-          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-binary-blue">
+          <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-t-binary-blue flex flex-col h-full">
             <div className="flex justify-center mb-6">
-              <FaRocket className="text-5xl text-binary-blue" />
+              <FaGlobe className="text-5xl text-binary-blue" />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-center text-binary-blue">
-              aaaaa
+              Join the Website Team today!
             </h3>
-            <p className="text-gray-600 text-center leading-relaxed">
-              aaaaa
+            <p className="text-gray-600 text-center leading-relaxed mb-6 flex-grow">
+              Like what you see and want to contribute? Talk to Paul or Laura on Teams to find out how to join the Website Team!
             </p>
+            <div className="flex justify-center mt-auto">
+              <a href="https://teams.microsoft.com/l/chat/0/0?users=butep@otc.edu,lk1012349@otc.edu" target='_blank' className="inline-flex items-center gap-2 px-6 py-3 bg-binary-blue text-white rounded-lg hover:bg-analog-aquamarine transition-all duration-300 hover:scale-105 font-medium">
+                <FaUsers className="text-lg" />
+                Contact Us
+              </a>
+            </div>
           </div>
         </div>
 
@@ -341,7 +409,7 @@ function Home() {
                     <img 
                       src={member.image} 
                       alt={member.name} 
-                      className="w-32 h-32 rounded-full object-cover shadow-lg border-4 border border-analog-aquamarine"
+                      className="w-32 h-32 rounded-full object-cover shadow-lg border-4 border-analog-aquamarine"
                     />
                   </div>
                   <div className="flex-1 text-center lg:text-left">
@@ -392,23 +460,31 @@ function Home() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {meetings.slice(1).reverse().map((meeting, index) => {
-                const isPast = meeting.dateObj < new Date();
+              {[...meetings].reverse().map((meeting, index) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); 
+                const meetingDate = new Date(meeting.dateObj);
+                meetingDate.setHours(0, 0, 0, 0); 
+                const isPast = meetingDate < today;
                 const isUpcoming = meeting === nextMeeting;
-                
+                const isOngoing = ongoingMeeting && meeting === ongoingMeeting;
                 return (
                   <div 
                     key={index} 
                     className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 ${
                       isUpcoming ? 'ring-2 ring-yaml-yellow' : ''
-                    } ${isPast ? 'opacity-75' : ''}`}
+                    } ${isOngoing ? 'ring-2 ring-analog-aquamarine' : ''} ${isPast ? 'opacity-75' : ''}`}
                   >
-                    {isUpcoming && (
+                    {isOngoing && (
+                      <div className="bg-analog-aquamarine text-white px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
+                        Ongoing Event
+                      </div>
+                    )}
+                    {isUpcoming && !isOngoing && (
                       <div className="bg-yaml-yellow text-binary-blue px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
                         Next Event
                       </div>
                     )}
-                    
                     <div className="mb-4">
                       <img 
                         src={getThumbnailImage(meeting.thumbnail)} 
@@ -416,11 +492,9 @@ function Home() {
                         className="w-full h-32 object-contain rounded-lg shadow-inner"
                       />
                     </div>
-                    
                     <h4 className="text-xl font-bold mb-2 text-binary-blue">
                       {meeting.title}
                     </h4>
-                    
                     <div className="text-sm text-gray-600 mb-3 space-y-1">
                       <div className="flex items-center gap-2">
                         <FaCalendarAlt className="text-analog-aquamarine" />
@@ -430,6 +504,12 @@ function Home() {
                         <FaClock className="text-analog-aquamarine" />
                         {formatEventTime(meeting.date)}
                       </div>
+                      {meeting.endDate && (
+                        <div className="flex items-center gap-2">
+                          <FaClock className="text-analog-aquamarine" />
+                          Ends: {formatEventTime(meeting.endDate)}
+                        </div>
+                      )}
                       {meeting.location && (
                         <div className="flex items-center gap-2">
                           <FaMapMarkerAlt className="text-analog-aquamarine" />
@@ -442,14 +522,12 @@ function Home() {
                         </div>
                       )}
                     </div>
-                    
                     <div 
                       className="text-gray-700 text-sm mb-4 leading-relaxed"
                       dangerouslySetInnerHTML={{ 
                         __html: meeting.description 
                       }}
                     />
-                    
                     {meeting.buttons && meeting.buttons.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {meeting.buttons.map((button, buttonIndex) => (

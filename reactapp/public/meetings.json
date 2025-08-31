@@ -1,16 +1,6 @@
 {
   "meetings": [
     {
-      "title": "TBA",
-      "thumbnail": "img/thumbnails/placeholder.png",
-      "date": "Jan 1 1985 18:00:00 GMT-0500",
-      "speaker": "TBA",
-      "description": "Soon™",
-      "location": "TBA",
-      "schedule": "",
-      "buttons": []
-    },
-    {
       "title": "Sharp Security from All Angles",
       "thumbnail": "img/thumbnails/3_26_25_thumbnail.png",
       "date": "Mar 26 2025 18:00:00 GMT-0500",

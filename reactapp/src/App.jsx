@@ -3,6 +3,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound'
+import Sponsors from './pages/Sponsors'
 import ComingSoon from './pages/ComingSoon'
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<ComingSoon />} />
+        <Route path="/sponsors" element={<Sponsors />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />

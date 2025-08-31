@@ -1,6 +1,4 @@
-import React from 'react';
 import { FaUsers, FaPizzaSlice, FaMicrophone } from 'react-icons/fa';
-import { IoSparkles } from 'react-icons/io5';
 
 const Footer = () => {
   return (
