@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaTrophy, FaMedal, FaAward, FaExternalLinkAlt, FaUsers, FaCode, FaRocket, FaSearch, FaGlobe, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaInfoCircle, FaPlus, FaTrash, FaPhone, FaGavel } from 'react-icons/fa'
+import { FaUsers, FaCode, FaRocket, FaInfoCircle, FaPlus, FaTrash, FaGavel } from 'react-icons/fa'
 import Hero from '../components/Hero'
-import Card from '../components/Card'
 
 function CaptureTheFlag() {
   const [teamInfo, setTeamInfo] = useState({

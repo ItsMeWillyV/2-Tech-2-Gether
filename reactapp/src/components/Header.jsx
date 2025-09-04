@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import tech2getherLogo from '../assets/tech2gether_logo.png'
+import tech2getherLogo from '../assets/logo.svg'
 
 function Header() {
   const location = useLocation()
@@ -22,7 +22,7 @@ function Header() {
               <img 
                 src={tech2getherLogo} 
                 alt="Tech2Gether Logo" 
-                className="h-14 sm:h-16 lg:h-20 w-auto"
+                className="h-48 sm:h-16 lg:h-20 w-auto"
               />
             </Link>
           </div>

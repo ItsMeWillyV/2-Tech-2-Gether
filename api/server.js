@@ -1,12 +1,15 @@
 const express = require('express');
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
+const root = '/api';
 
 // Middleware to parse JSON
 app.use(express.json());
 
+
+
 // Test route
-app.get('/test', (req, res) => {
+app.get(`${root}/test`, (req, res) => {
   res.json({
     message: 'Test route is working!',
     timestamp: new Date().toISOString(),
@@ -15,7 +18,7 @@ app.get('/test', (req, res) => {
 });
 
 // Root route
-app.get('/', (req, res) => {
+app.get(`${root}/`, (req, res) => {
   res.json({
     message: 'Welcome to  the Tech2Gether API',
     version: '1.0.0'

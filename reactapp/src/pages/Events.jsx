@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaTrophy, FaMedal, FaAward, FaExternalLinkAlt, FaUsers, FaCode, FaRocket, FaSearch, FaGlobe, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaInfoCircle } from 'react-icons/fa'
+import { FaTrophy, FaFlag, FaCode, FaRocket, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaInfoCircle } from 'react-icons/fa'
 import Hero from '../components/Hero'
 import Card from '../components/Card'
 
@@ -44,12 +44,12 @@ function Events() {
           {/* Event Cards Grid */}
           <div className="flex flex-wrap justify-center gap-8 mb-16 ">
 
-            {/* Cyber Heist CTF Event */}
+            {/* Ozzy's Cyber Heist CTF Event */}
             <Card
               id="ctf"
-              icon={FaSearch}
+              icon={FaFlag}
               iconColor="text-yaml-yellow"
-              title="Cyber Heist"
+              title="Ozzy's Cyber Heist"
               subtitle="Capture the Flag Competition"
               subtitleBg="bg-yaml-yellow"
               subtitleText="text-binary-blue"

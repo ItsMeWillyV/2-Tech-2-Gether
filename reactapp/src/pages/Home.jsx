@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaUser, FaSearch} from 'react-icons/fa'
+import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaFlag, FaSearch} from 'react-icons/fa'
 import Hero from '../components/Hero'
 import Card from '../components/Card'
 import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
@@ -347,14 +347,14 @@ function Home() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-10 mb-20">
           <Card
-            icon={FaUsers}
+            icon={FaFlag}
             iconColor="text-yaml-yellow"
-            title="Cyber Heist"
+            title="Ozzy's Cyber Heist"
             description="Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD."
             borderColor="border-t-yaml-yellow"
             button={{
-              text: "View Event",
-              href: "/events#ctf",
+              text: "View Events",
+              href: "/events",
               icon: FaSearch,
               className: "bg-yaml-yellow text-binary-blue hover:bg-analog-aquamarine hover:text-white"
             }}
@@ -366,9 +366,9 @@ function Home() {
             description="Coming in the Spring Semester—stay tuned for more info!"
             borderColor="border-t-analog-aquamarine"
             button={{
-              text: "Learn More",
-              href: "/events#hackathon",
-              icon: FaRocket,
+              text: "View Events",
+              href: "/events",
+              icon: FaSearch,
               className: "bg-analog-aquamarine text-white hover:bg-binary-blue"
             }}
           />

@@ -1,4 +1,4 @@
-import tech2getherLogo from '../assets/tech2gether_logo.png'
+import tech2getherLogo from '../assets/logo.svg'
 import backgroundImage from '../assets/background.png'
 
 function Hero({ title = "Tech2Gether", subtitle = "Where innovation meets collaboration at Ozarks Tech" }) {
@@ -14,7 +14,7 @@ function Hero({ title = "Tech2Gether", subtitle = "Where innovation meets collab
           <img
             src={tech2getherLogo}
             alt="Tech2Gether Logo"
-            className="h-32 w-auto"
+            className="h-64 w-auto"
           />
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 tracking-tight">
