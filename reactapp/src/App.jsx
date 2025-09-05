@@ -5,7 +5,7 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import Sponsors from './pages/Sponsors'
 import ComingSoon from './pages/ComingSoon'
-// import CaptureTheFlag from './pages/CaptureTheFlag'
+import CaptureTheFlag from './pages/CaptureTheFlag'
 import Events from './pages/Events'
 
 function App() {

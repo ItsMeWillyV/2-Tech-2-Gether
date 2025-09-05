@@ -42,7 +42,7 @@ function Events() {
           </div>
 
           {/* Event Cards Grid */}
-          <div className="flex flex-wrap justify-center gap-8 mb-16 ">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16 max-w-6xl mx-auto">
 
             {/* Ozzy's Cyber Heist CTF Event */}
             <Card
@@ -61,7 +61,6 @@ function Events() {
               ]}
               description="Join us for our first annual Capture the Flag at Ozarks Tech! Test your cybersecurity skills in this exciting competition. Sign-up opens September 10th and closes November 1st."
               additionalInfo={<><strong>Registration:</strong> September 10th - November 1st</>}
-              className='sm:w-[450px]'
               button={{
                 text: "Register",
                 icon: FaInfoCircle,
@@ -87,7 +86,6 @@ function Events() {
               ]}
               description="Our signature hackathon event is coming in the Spring Semester! Join teams, build innovative projects, and compete for prizes. Perfect for students of all skill levels."
               additionalInfo={<><strong>Status:</strong> Planning Phase - More details coming soon!</>}
-              className='sm:w-[450px]'
               button={{
                 text: "Stay Tuned for Updates",
                 icon: FaRocket,

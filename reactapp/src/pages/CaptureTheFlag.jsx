@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaUsers, FaCode, FaRocket, FaInfoCircle, FaPlus, FaTrash, FaGavel } from 'react-icons/fa'
+import { FaUsers, FaCode, FaRocket, FaInfoCircle, FaPlus, FaTrash, FaGavel, FaShieldAlt } from 'react-icons/fa'
+import ReCAPTCHA from 'react-google-recaptcha'
 import Hero from '../components/Hero'
 
 function CaptureTheFlag() {
@@ -39,6 +40,8 @@ function CaptureTheFlag() {
   ]);
 
   const [agreeToRules, setAgreeToRules] = useState(false);
+  const [recaptchaValue, setRecaptchaValue] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const addMember = () => {
     if (members.length < 5) {
@@ -95,10 +98,28 @@ function CaptureTheFlag() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if reCAPTCHA is completed
+    if (!recaptchaValue) {
+      alert('Please complete the reCAPTCHA verification.');
+      return;
+    }
+    
     // Add form validation and submission logic here
     console.log('Team Info:', teamInfo);
     console.log('Members:', members);
     console.log('Agreed to rules:', agreeToRules);
+    console.log('reCAPTCHA token:', recaptchaValue);
+    
+    // Reset reCAPTCHA after successful submission
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+      setRecaptchaValue(null);
+    }
+  };
+
+  const onRecaptchaChange = (value) => {
+    setRecaptchaValue(value);
   };
     
   // Ensure title updates when component mounts
@@ -411,16 +432,17 @@ function CaptureTheFlag() {
           ))}
         </div>
 
-        {/* Rules Agreement */}
-        <div className="rounded-xl shadow-lg p-8 mb-8 hover:shadow-xl transition-shadow duration-300">
+        {/* Rules Agreement & Security Verification */}
+        <div className="bg-gradient-to-br from-white to-amber-50 rounded-xl shadow-lg border border-amber-100 p-8 mb-8 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center mb-6">
             <div className="bg-amber-600 rounded-lg p-3 mr-4">
-                <FaGavel className="text-white text-xl" />
-              </div>
-            <h3 className="text-2xl font-bold text-gray-800 font-arial-nova">Competition Agreement</h3>
+              <FaGavel className="text-white text-xl" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 font-arial-nova">Competition Agreement & Security</h3>
           </div>
           
-          <div className="bg-white rounded-lg p-6 border-2 border-yellow-200">
+          {/* Rules Agreement Section */}
+          <div className="bg-white rounded-lg p-6 border-2 border-yellow-200 mb-6">
             <div className="flex items-start gap-4">
               <input
                 type="checkbox"
@@ -439,6 +461,16 @@ function CaptureTheFlag() {
               </label>
             </div>
           </div>
+
+            {/* ReCAPTCHA */}
+            <div className="flex justify-center mb-4">
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Test site key - replace
+                onChange={onRecaptchaChange}
+                theme="light"
+              />
+          </div>
         </div>
 
         {/* Submit Button */}
@@ -446,13 +478,13 @@ function CaptureTheFlag() {
           <button
             type="submit"
             className={`
-              ${members.length >= 2 && agreeToRules 
+              ${members.length >= 2 && agreeToRules && recaptchaValue
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105' 
                 : 'bg-gray-400 cursor-not-allowed'
               }
               text-white font-bold px-12 py-4 rounded-xl text-xl transition-all duration-300 shadow-md
             `}
-            disabled={members.length < 2 || !agreeToRules}
+            disabled={members.length < 2 || !agreeToRules || !recaptchaValue}
           >
             <FaRocket className='inline-block' /> Register Team for Cyber Heist
           </button>
@@ -471,6 +503,15 @@ function CaptureTheFlag() {
               <p className="text-yellow-700 font-semibold flex items-center">
                 <FaInfoCircle className="mr-2" />
                 Please agree to the competition rules to continue
+              </p>
+            </div>
+          )}
+
+          {!recaptchaValue && members.length >= 2 && agreeToRules && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 inline-block">
+              <p className="text-orange-700 font-semibold flex items-center">
+                <FaInfoCircle className="mr-2" />
+                Please complete the security verification to register
               </p>
             </div>
           )}

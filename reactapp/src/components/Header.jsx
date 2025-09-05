@@ -14,22 +14,22 @@ function Header() {
 
   return (
     <header className="bg-white shadow-lg border-b-4" style={{ backgroundColor: '#00447c', borderBottomColor: '#FFD700' }}>
-      <div className="max-w-6xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-4 min-w-0">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="hover:opacity-80 transition-opacity">
               <img 
                 src={tech2getherLogo} 
                 alt="Tech2Gether Logo" 
-                className="h-48 sm:h-16 lg:h-20 w-auto"
+                className="h-12 sm:h-16 lg:h-20 w-auto max-w-none"
               />
             </Link>
           </div>
           
           {/* Navigation */}
-          <nav className="flex-shrink-0">
-            <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+          <nav className="flex-shrink-0 min-w-0">
+            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path
                 const isHovered = hoveredItem === item.path
@@ -38,14 +38,14 @@ function Header() {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="relative flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 font-bold transition-all duration-500 text-white overflow-hidden group text-sm sm:text-base"
+                    className="relative flex items-center justify-center px-2 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 font-bold transition-all duration-500 text-white overflow-hidden group text-xs sm:text-sm lg:text-base"
                     style={{
                       clipPath: 'polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%)',
                       background: (isActive || isHovered)
                         ? 'linear-gradient(135deg, #0E9ED5, #0B7FA8)' 
                         : 'linear-gradient(135deg, #FFC90D, #FFB000)',
                       color: (isActive || isHovered) ? 'white' : '#00447c',
-                      minWidth: '80px',
+                      minWidth: '60px',
                       boxShadow: (isActive || isHovered)
                         ? (isHovered && !isActive) 
                           ? '0 8px 20px rgba(14, 158, 213, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
