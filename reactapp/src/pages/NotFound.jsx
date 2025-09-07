@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FaHome, FaCode, FaRocket, FaCog, FaExclamationTriangle } from 'react-icons/fa'
+import AnimatedBackground from '../components/AnimatedBackground'
 import '../App.css'
 
 function NotFound() {
@@ -11,7 +12,7 @@ function NotFound() {
   }, []);
 
   return (
-    <div className="not-found-container">
+    <AnimatedBackground className="flex items-center justify-center p-8">
       <Helmet key="not-found-helmet">
         <title>404 - Page Not Found | Tech2Gether</title>
         <meta name="description" content="The page you are looking for does not exist. Return to Tech2Gether homepage." />
@@ -20,19 +21,6 @@ function NotFound() {
         <meta property="og:description" content="The page you are looking for does not exist. Return to Tech2Gether homepage." />
         <meta property="og:type" content="website" />
       </Helmet>
-      
-      <div className="not-found-background-elements">
-        <div className="floating-code">{'<>'}</div>
-        <div className="floating-code">{'</>'}</div>
-        <div className="floating-code">{'{ }'}</div>
-        <div className="floating-code">{'[ ]'}</div>
-        <div className="floating-gear">
-          <FaCog />
-        </div>
-        <div className="floating-gear gear-2">
-          <FaCog />
-        </div>
-      </div>
       
       <div className="not-found-content">
         <div className="error-icon">
@@ -65,7 +53,7 @@ function NotFound() {
           <p>If you believe this is an error, please contact our team.</p>
         </div>
       </div>
-    </div>
+    </AnimatedBackground>
   )
 }
 

@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const AuthUtils = require('../utils/auth');
+const EmailService = require('../utils/email');
 const {
   validateRegistration,
   validateLogin,
   validatePasswordResetRequest,
   validatePasswordReset,
   validateEmailVerification,
+  validateResendVerification,
   validateProfileUpdate,
   handleValidationErrors
 } = require('../utils/validation');
@@ -49,9 +51,6 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
       phone,
       school_name,
       pronouns,
-      emergency_contact_name_first,
-      emergency_contact_name_last,
-      emergency_contact_phone
     } = req.body;
 
     // Check if user already exists
@@ -91,9 +90,6 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
       phone: phone ? AuthUtils.sanitizeInput(phone) : null,
       school_name: school_name ? AuthUtils.sanitizeInput(school_name) : null,
       pronouns: pronouns ? AuthUtils.sanitizeInput(pronouns) : null,
-      emergency_contact_name_first: AuthUtils.sanitizeInput(emergency_contact_name_first),
-      emergency_contact_name_last: AuthUtils.sanitizeInput(emergency_contact_name_last),
-      emergency_contact_phone: AuthUtils.sanitizeInput(emergency_contact_phone),
       created_at: new Date(),
       updated_at: new Date()
     });
@@ -114,14 +110,36 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
     // Save user (in production, save to database)
     users.push(newUser);
 
-    // TODO: Send verification email
-    console.log(`Verification token for ${email}: ${verificationToken}`);
+    let emailResult = { sent: false, skipped: false };
+    try {
+      emailResult = await EmailService.sendVerificationEmail(newUser, verificationToken);
+      if (!emailResult.sent) {
+        console.warn('[Register] Verification email not sent:', emailResult.reason || emailResult.error);
+      }
+    } catch (e) {
+      console.error('[Register] Email send exception:', e.message);
+    }
 
-    res.status(201).json({
+    // Always log token in dev for testing
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`(DEV) Verification token for ${email}: ${verificationToken}`);
+    }
+
+    const baseResponse = {
       success: true,
       message: 'User registered successfully. Please check your email to verify your account.',
       user: newUser.toPublicJSON()
-    });
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+      baseResponse.dev = {
+        verification_token: verificationToken,
+        email_send: emailResult,
+        email_debug: EmailService.getEmailDebugInfo()
+      };
+    }
+
+    res.status(201).json(baseResponse);
 
   } catch (error) {
     console.error('Registration error:', error);
@@ -224,6 +242,98 @@ router.post('/verify-email', validateEmailVerification, handleValidationErrors, 
     res.status(500).json({
       success: false,
       message: 'Internal server error during email verification'
+    });
+  }
+});
+
+// GET email verification (clickable link)
+router.get('/verify-email/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = findUserByVerificationToken(token);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification token'
+      });
+    }
+
+    const result = user.verifyEmailWithToken(token);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+
+    user.updated_at = new Date();
+
+    // Optional redirect to frontend if configured
+    if (process.env.FRONTEND_BASE_URL) {
+      const redirectUrl = `${process.env.FRONTEND_BASE_URL.replace(/\/$/, '')}/email-verified?status=success`;
+      return res.redirect(302, redirectUrl);
+    }
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully'
+    });
+  } catch (error) {
+    console.error('Email verification (GET) error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during email verification'
+    });
+  }
+});
+
+// Resend verification email
+router.post('/resend-verification', validateResendVerification, handleValidationErrors, async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = findUserByEmail(email);
+    if (!user) {
+      // Do not reveal existence
+      return res.json({
+        success: true,
+        message: 'If the account exists and is unverified, a new verification email was sent.'
+      });
+    }
+
+    if (user.email_is_verified) {
+      return res.json({
+        success: true,
+        message: 'Email already verified.'
+      });
+    }
+
+    // Generate fresh token
+    const newToken = AuthUtils.generateVerificationToken();
+    user.setEmailVerificationToken(newToken);
+    user.updated_at = new Date();
+
+    const result = await EmailService.sendVerificationEmail(user, newToken);
+
+    const response = {
+      success: true,
+      message: 'If the account exists and is unverified, a new verification email was sent.'
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+      response.dev = {
+        sent: result.sent,
+        messageId: result.messageId,
+        previewUrl: result.previewUrl,
+        verification_token: newToken
+      };
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during resend verification'
     });
   }
 });

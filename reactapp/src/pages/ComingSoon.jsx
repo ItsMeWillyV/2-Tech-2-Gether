@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { FaHome, FaCode, FaRocket, FaCog, FaClock } from 'react-icons/fa'
 import { useState, useEffect, useMemo } from 'react'
+import AnimatedBackground from '../components/AnimatedBackground'
 import '../App.css'
 
 function ComingSoon() {
@@ -41,7 +42,7 @@ function ComingSoon() {
   }, [randomMessages]);
 
   return (
-    <div className="not-found-container">
+    <AnimatedBackground className="flex items-center justify-center p-8">
       <Helmet key="coming-soon-helmet">
         <title>Coming Soon - Tech2Gether</title>
         <meta name="description" content="This page is coming soon. Check back later for updates!" />
@@ -50,19 +51,6 @@ function ComingSoon() {
         <meta property="og:description" content="This page is coming soon. Check back later for updates!" />
         <meta property="og:type" content="website" />
       </Helmet>
-      
-      <div className="not-found-background-elements">
-        <div className="floating-code">{'<>'}</div>
-        <div className="floating-code">{'</>'}</div>
-        <div className="floating-code">{'{ }'}</div>
-        <div className="floating-code">{'[ ]'}</div>
-        <div className="floating-gear">
-          <FaCog />
-        </div>
-        <div className="floating-gear gear-2">
-          <FaCog />
-        </div>
-      </div>
       
       <div className="not-found-content">
         <div className="error-icon">
@@ -96,7 +84,7 @@ function ComingSoon() {
           <p>{currentMessage}</p>
         </div>
       </div>
-    </div>
+    </AnimatedBackground>
   )
 }
 

@@ -48,22 +48,6 @@ const validateRegistration = [
     .trim()
     .isLength({ max: 20 })
     .withMessage('Pronouns must be less than 20 characters'),
-  
-  body('emergency_contact_name_first')
-    .trim()
-    .isLength({ min: 1, max: 50 })
-    .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('Emergency contact first name is required and must contain only letters, spaces, hyphens, and apostrophes'),
-  
-  body('emergency_contact_name_last')
-    .trim()
-    .isLength({ min: 1, max: 50 })
-    .matches(/^[a-zA-Z\s'-]+$/)
-    .withMessage('Emergency contact last name is required and must contain only letters, spaces, hyphens, and apostrophes'),
-  
-  body('emergency_contact_phone')
-    .matches(/^\+?[\d\s\-\(\)]+$/)
-    .withMessage('Emergency contact phone number is required and must be valid')
 ];
 
 // Validation rules for user login
@@ -104,6 +88,14 @@ const validateEmailVerification = [
   body('token')
     .isLength({ min: 1 })
     .withMessage('Verification token is required')
+];
+
+// Validation for resend verification request
+const validateResendVerification = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required')
 ];
 
 // Validation rules for profile update
@@ -173,5 +165,6 @@ module.exports = {
   validatePasswordReset,
   validateEmailVerification,
   validateProfileUpdate,
+  validateResendVerification,
   handleValidationErrors
 };

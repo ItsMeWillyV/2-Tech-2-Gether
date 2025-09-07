@@ -88,9 +88,6 @@ class User {
     if (!this.name_first) errors.push('First name is required');
     if (!this.name_last) errors.push('Last name is required');
     if (!this.school_name) errors.push('School name is required');
-    if (!this.emergency_contact_name_first) errors.push('Emergency contact first name is required');
-    if (!this.emergency_contact_name_last) errors.push('Emergency contact last name is required');
-    if (!this.emergency_contact_phone) errors.push('Emergency contact phone is required');
     
     return {
       isValid: errors.length === 0,
