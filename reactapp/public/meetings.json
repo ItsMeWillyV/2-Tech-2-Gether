@@ -53,6 +53,21 @@
       "location": "PMC 232",
       "schedule": "5:00 PM - Meeting starts",
       "buttons": []
+    },   
+    {
+      "title": "Come back tomorrow to find out!",
+      "thumbnail": "img/thumbnails/placeholder.png",
+      "date": "September 17 2025 17:00:00 GMT-0500",
+      "speaker": "Announcement Coming Soon",
+      "description": "Hey friends! We're getting 2Gether in PMC-232 at 5:00 PM on Wednesday, September 17th!\u003Cbr\u003E\u003Cbr\u003EWhether you're new to Tech2Gether or a returning member, this is the perfect chance to:\u003Cbr\u003E\u003Cbr\u003E✨ Meet other tech-minded students\u003Cbr\u003E✨ Learn about what we're planning for this semester\u003Cbr\u003E✨ Share your ideas + hang out\u003Cbr\u003E✨ See how you can contribute (we’re especially looking for folks to join the Website Team!)\u003Cbr\u003E\u003Cbr\u003ENo experience or RSVP needed - just bring yourself\u003Cbr\u003EHope to see you there!",
+      "location": "PMC 232",
+      "schedule": "5:00 PM - Meeting starts",
+      "buttons": [
+        {
+          "text": "RSVP",
+          "link": "https://forms.office.com/Pages/ResponsePage.aspx?id=drq33vxyB0yDPxYotekhaNhghODwk3NEh9FML_kcXP9UNlpZU1M5VDdaMDVVNDZSSVNQWFJVNjdKWi4u"
+        }
+      ]
     }
   ]
 }
