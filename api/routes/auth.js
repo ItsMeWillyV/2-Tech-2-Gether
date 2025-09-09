@@ -545,4 +545,122 @@ router.post('/logout', authenticateToken, (req, res) => {
   });
 });
 
+// endpoints
+
+// Create user endpoint
+router.post(`${root}/users`, async (req, res, next) => {
+  try {
+    const { email, password, first_name, last_name } = req.body;
+    
+    // Simple validation
+    if (!email || !password || !first_name || !last_name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: email, password, first_name, last_name'
+      });
+    }
+
+    // Create user with minimal required fields
+    const user = await db.createUser({
+      email,
+      password,
+      first_name,
+      last_name,
+      org_id: 1 // We'll set a default org_id of 1 for now
+    });
+
+    res.status(201).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    if (error.message === 'User with this email already exists') {
+      return res.status(409).json({
+        success: false,
+        message: error.message
+      });
+    }
+    next(error);
+  }
+});
+
+// Login endpoint
+router.post(`${root}/auth/login`, async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    const userData = await db.authenticateUser(email, password);
+
+    res.json({
+      success: true,
+      data: userData
+    });
+  } catch (error) {
+    if (error.message === 'Invalid credentials') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+    next(error);
+  }
+});
+
+// Get user profile endpoint
+router.get(`${root}/users/:userId`, async (req, res, next) => {
+  try {
+    const user = await db.getUserById(req.params.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update user endpoint
+router.put(`${root}/users/:userId`, async (req, res, next) => {
+  try {
+    const { first_name, last_name, email } = req.body;
+    const updateData = {};
+
+    // Only include fields that are provided
+    if (first_name) updateData.first_name = first_name;
+    if (last_name) updateData.last_name = last_name;
+    if (email) updateData.email = email;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields provided for update'
+      });
+    }
+
+    const updatedUser = await db.updateUser(req.params.userId, updateData);
+
+    res.json({
+      success: true,
+      data: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

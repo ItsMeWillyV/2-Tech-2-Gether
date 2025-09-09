@@ -21,7 +21,7 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/events/capture-the-flag" element={<ComingSoon />} />
+          <Route path="/events/capture-the-flag" element={<CaptureTheFlag />} />
           <Route path="/sponsors" element={<Sponsors />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
