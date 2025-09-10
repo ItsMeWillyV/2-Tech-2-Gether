@@ -3,7 +3,8 @@ import { Helmet } from 'react-helmet-async'
 import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaFlag, FaSearch} from 'react-icons/fa'
 import Hero from '../components/Hero'
 import Card from '../components/Card'
-import eventThumbnail from '../assets/thumbnails/3_26_25_thumbnail.png'
+import eventThumbnail from '../assets/thumbnails/SRC.png'
+import event2Thumbnail from '../assets/thumbnails/JenCollins.jpg'
 import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
 import diegoPortrait from '../assets/portraits/diego_haro.png'
 import lauraPortrait from '../assets/portraits/laura_kirkpatrick.png'
@@ -13,6 +14,7 @@ import willyPortrait from '../assets/portraits/willy_vanderpool.png'
 function Home() {
   const [meetings, setMeetings] = useState([]);
   const [nextMeeting, setNextMeeting] = useState(null);
+  const [secondMeeting, setSecondMeeting] = useState(null);
   const [ongoingMeeting, setOngoingMeeting] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,9 +61,21 @@ function Home() {
           return meeting.dateObj >= currentDate;
         });
 
+        // Find the second meeting on the same date as the next meeting
+        let secondMeetingOnSameDate = null;
+        if (upcomingMeeting) {
+          const nextMeetingDate = upcomingMeeting.dateObj.toDateString();
+          secondMeetingOnSameDate = sortedMeetings.find(meeting => {
+            return meeting !== upcomingMeeting && 
+                   meeting.dateObj.toDateString() === nextMeetingDate &&
+                   meeting.dateObj >= currentDate;
+          });
+        }
+
         setMeetings(sortedMeetings);
         setOngoingMeeting(ongoing || null);
         setNextMeeting(upcomingMeeting || null);
+        setSecondMeeting(secondMeetingOnSameDate || null);
       } catch (err) {
         console.error('Error fetching meetings:', err);
         setError(err.message);
@@ -104,8 +118,11 @@ function Home() {
     if (!thumbnailPath || thumbnailPath.includes('placeholder.png')) {
       return placeholderThumbnail;
     }
-    if (thumbnailPath.includes('3_26_25_thumbnail.png')) {
+    if (thumbnailPath.includes('SRC.png')) {
       return eventThumbnail;
+    }
+    if (thumbnailPath.includes('JenCollins.jpg')) {
+      return event2Thumbnail;
     }
     // Default to placeholder if thumbnail not found
     return placeholderThumbnail;
@@ -267,69 +284,140 @@ function Home() {
               </div>
             </div>
           ) : nextMeeting ? (
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-1 text-white">
-                <h3 className="text-3xl font-bold mb-4">
-                  <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
-                  Next Event: {formatEventDate(nextMeeting.date)}
-                </h3>
-                <h4 className="text-2xl font-semibold mb-3">
-                  {nextMeeting.title}
-                </h4>
-                {nextMeeting.speaker && (
-                  <p className="text-lg mb-2 opacity-90">
-                    <strong>Speaker:</strong> {nextMeeting.speaker}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                  {nextMeeting.location && (
-                    <span className="flex items-center gap-1">
-                      <FaMapMarkerAlt className="text-yaml-yellow" />
-                      {nextMeeting.location}
-                    </span>
+            <div className="text-white">
+              <h3 className="text-3xl font-bold mb-6 text-center">
+                <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
+                Next Event{secondMeeting ? 's' : ''}: {formatEventDate(nextMeeting.date)}
+              </h3>
+              
+              {/* First Meeting */}
+              <div className="flex flex-col md:flex-row items-center gap-8 mb-6">
+                <div className="flex-1">
+                  <h4 className="text-2xl font-semibold mb-3">
+                    {nextMeeting.title}
+                  </h4>
+                  {nextMeeting.speaker && (
+                    <p className="text-lg mb-2 opacity-90">
+                      <strong>Speaker:</strong> {nextMeeting.speaker}
+                    </p>
                   )}
-                  <span className="flex items-center gap-1">
-                    <FaClock className="text-yaml-yellow" />
-                    {formatEventTime(nextMeeting.date)}
-                  </span>
-                </div>
-                <div 
-                  className="text-base mb-6 opacity-95 leading-relaxed"
-                  dangerouslySetInnerHTML={{ 
-                    __html: nextMeeting.description 
-                  }}
-                />
-                {nextMeeting.schedule && (
-                  <div className="mb-6 p-3 bg-black bg-opacity-20 rounded-lg">
-                    <h5 className="font-semibold mb-2">Schedule:</h5>
-                    <div 
-                      className="text-sm opacity-90"
-                      dangerouslySetInnerHTML={{ __html: nextMeeting.schedule }}
-                    />
+                  <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                    {nextMeeting.location && (
+                      <span className="flex items-center gap-1">
+                        <FaMapMarkerAlt className="text-yaml-yellow" />
+                        {nextMeeting.location}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <FaClock className="text-yaml-yellow" />
+                      {formatEventTime(nextMeeting.date)}
+                    </span>
                   </div>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  {nextMeeting.buttons && nextMeeting.buttons.map((button, index) => (
-                    <a
-                      key={index}
-                      href={button.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
-                    >
-                      {button.text}
-                      <FaExternalLinkAlt className="text-sm" />
-                    </a>
-                  ))}
+                  <div 
+                    className="text-base mb-4 opacity-95 leading-relaxed"
+                    dangerouslySetInnerHTML={{ 
+                      __html: nextMeeting.description 
+                    }}
+                  />
+                  {nextMeeting.schedule && (
+                    <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-lg">
+                      <h5 className="font-semibold mb-2">Schedule:</h5>
+                      <div 
+                        className="text-sm opacity-90"
+                        dangerouslySetInnerHTML={{ __html: nextMeeting.schedule }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-3">
+                    {nextMeeting.buttons && nextMeeting.buttons.map((button, index) => (
+                      <a
+                        key={index}
+                        href={button.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+                      >
+                        {button.text}
+                        <FaExternalLinkAlt className="text-sm" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-shrink-0">
+                  <img 
+                    src={getThumbnailImage(nextMeeting.thumbnail)} 
+                    alt={nextMeeting.title} 
+                    className="w-64 h-40 object-contain rounded-xl"
+                  />
                 </div>
               </div>
-              <div className="flex-shrink-0">
-                <img 
-                  src={getThumbnailImage(nextMeeting.thumbnail)} 
-                  alt={nextMeeting.title} 
-                  className="w-64 h-40 object-contain rounded-xl"
-                />
-              </div>
+
+              {/* Divider and Second Meeting */}
+              {secondMeeting && (
+                <>
+                  <div className="border-t border-white border-opacity-30 my-6"></div>
+                  <div className="flex flex-col md:flex-row items-center gap-8">
+                    <div className="flex-1">
+                      <h4 className="text-2xl font-semibold mb-3">
+                        {secondMeeting.title}
+                      </h4>
+                      {secondMeeting.speaker && (
+                        <p className="text-lg mb-2 opacity-90">
+                          <strong>Speaker:</strong> {secondMeeting.speaker}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                        {secondMeeting.location && (
+                          <span className="flex items-center gap-1">
+                            <FaMapMarkerAlt className="text-yaml-yellow" />
+                            {secondMeeting.location}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <FaClock className="text-yaml-yellow" />
+                          {formatEventTime(secondMeeting.date)}
+                        </span>
+                      </div>
+                      <div 
+                        className="text-base mb-4 opacity-95 leading-relaxed"
+                        dangerouslySetInnerHTML={{ 
+                          __html: secondMeeting.description 
+                        }}
+                      />
+                      {secondMeeting.schedule && (
+                        <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-lg">
+                          <h5 className="font-semibold mb-2">Schedule:</h5>
+                          <div 
+                            className="text-sm opacity-90"
+                            dangerouslySetInnerHTML={{ __html: secondMeeting.schedule }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-3">
+                        {secondMeeting.buttons && secondMeeting.buttons.map((button, index) => (
+                          <a
+                            key={index}
+                            href={button.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-event px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+                          >
+                            {button.text}
+                            <FaExternalLinkAlt className="text-sm" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={getThumbnailImage(secondMeeting.thumbnail)} 
+                        alt={secondMeeting.title} 
+                        className="w-64 h-40 object-contain rounded-xl"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="text-center text-white">

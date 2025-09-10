@@ -85,7 +85,7 @@ function Header() {
             </nav>
 
             {/* Authentication Buttons */}
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               {isAuthenticated ? (
                 <button
                   onClick={logout}
@@ -101,7 +101,7 @@ function Header() {
                   Login
                 </Link>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
