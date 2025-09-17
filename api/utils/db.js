@@ -251,8 +251,7 @@ const db = {
           em_first_name, 
           em_last_name, 
           em_relationship, 
-          em_phone, 
-          em_linkedin = null 
+          em_phone
         } = emergencyContactData;
         
         if (!em_first_name || !em_last_name || !em_relationship || !em_phone) {
@@ -261,7 +260,7 @@ const db = {
         
         // Insert emergency contact
         const [emResult] = await connection.execute(
-          `INSERT INTO user (first_name, last_name, em_relationship, phone, user_linkedin, mem_id) 
+          `INSERT INTO user (first_name, last_name, em_relationship, phone) 
            VALUES (?, ?, ?, ?, ?, ?)`,
           [em_first_name, em_last_name, em_relationship, em_phone, em_linkedin, userId]
         );
@@ -361,7 +360,7 @@ const db = {
     const connection = await pool.getConnection();
     try {
       const [contacts] = await connection.execute(
-        `SELECT user_id, first_name, last_name, em_relationship, phone, user_linkedin
+        `SELECT user_id, first_name, last_name, em_relationship, phone
          FROM user WHERE mem_id = ? AND em_relationship IS NOT NULL`,
         [userId]
       );
