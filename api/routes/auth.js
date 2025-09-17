@@ -751,8 +751,7 @@ router.post(`${root}/users/:userId/events/:eventId/register`, async (req, res, n
         em_last_name: AuthUtils.sanitizeInput(em_last_name),
         em_relationship: AuthUtils.sanitizeInput(em_relationship),
         em_phone: AuthUtils.sanitizeInput(em_phone),
-        em_linkedin: em_linkedin ? AuthUtils.sanitizeInput(em_linkedin) : null
-      };
+        };
     }
 
     // Register user for event using db.js method
