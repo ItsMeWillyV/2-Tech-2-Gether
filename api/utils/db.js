@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'your_database_name',
+  password: process.env.DB_PASSWORD || 'q&8p%d5S2!B5Z%ojNLXyK#',
+  database: process.env.DB_NAME || 'new_schema',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

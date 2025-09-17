@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const AuthUtils = require('../utils/auth');
 const EmailService = require('../utils/email');
+const db = require('../utils/db');
 const {
   validateRegistration,
   validateLogin,
@@ -14,6 +15,9 @@ const {
   handleValidationErrors
 } = require('../utils/validation');
 const { authenticateToken, requireVerification } = require('../middleware/auth');
+
+// API root path for database endpoints
+const root = '/api/v1';
 
 // In-memory storage for demonstration (replace with database in production)
 let users = [];
@@ -139,7 +143,7 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
       };
     }
 
-    res.status(201).json(baseResponse);
+    res.status(200).json(baseResponse);
 
   } catch (error) {
     console.error('Registration error:', error);
@@ -550,32 +554,66 @@ router.post('/logout', authenticateToken, (req, res) => {
 // Create user endpoint
 router.post(`${root}/users`, async (req, res, next) => {
   try {
-    const { email, password, first_name, last_name } = req.body;
+    const { 
+      email, 
+      password, 
+      org_id,
+      first_name, 
+      last_name,
+      pronouns,
+      phone,
+      user_linkedin,
+      user_github
+    } = req.body;
     
-    // Simple validation
-    if (!email || !password || !first_name || !last_name) {
+    // Validate required fields
+    if (!email || !password || !org_id || !first_name || !last_name) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: email, password, first_name, last_name'
+        message: 'Missing required fields: email, password, org_id, first_name, last_name'
       });
     }
 
-    // Create user with minimal required fields
-    const user = await db.createUser({
-      email,
-      password,
-      first_name,
-      last_name,
-      org_id: 1 // We'll set a default org_id of 1 for now
-    });
+    // Validate password strength
+    const passwordValidation = AuthUtils.validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password does not meet security requirements',
+        errors: passwordValidation.errors
+      });
+    }
 
-    res.status(201).json({
+    // Sanitize inputs
+    const userData = {
+      email: AuthUtils.sanitizeInput(email),
+      password,
+      org_id,
+      first_name: AuthUtils.sanitizeInput(first_name),
+      last_name: AuthUtils.sanitizeInput(last_name),
+      pronouns: pronouns ? AuthUtils.sanitizeInput(pronouns) : null,
+      phone: phone ? AuthUtils.sanitizeInput(phone) : null,
+      user_linkedin: user_linkedin ? AuthUtils.sanitizeInput(user_linkedin) : null,
+      user_github: user_github ? AuthUtils.sanitizeInput(user_github) : null
+    };
+
+    // Create user using db.js method
+    const user = await db.createUser(userData);
+
+    res.status(200).json({
       success: true,
+      message: 'User created successfully',
       data: user
     });
   } catch (error) {
     if (error.message === 'User with this email already exists') {
       return res.status(409).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message === 'Invalid organization ID') {
+      return res.status(400).json({
         success: false,
         message: error.message
       });
@@ -659,6 +697,193 @@ router.put(`${root}/users/:userId`, async (req, res, next) => {
       data: updatedUser
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+// Register user for event endpoint
+router.post(`${root}/users/:userId/events/:eventId/register`, async (req, res, next) => {
+  try {
+    const { userId, eventId } = req.params;
+    const { emergencyContact } = req.body;
+
+    // Validate required path parameters
+    if (!userId || !eventId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and Event ID are required'
+      });
+    }
+
+    // Convert to numbers (assuming they should be numeric)
+    const userIdNum = parseInt(userId);
+    const eventIdNum = parseInt(eventId);
+
+    if (isNaN(userIdNum) || isNaN(eventIdNum)) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and Event ID must be valid numbers'
+      });
+    }
+
+    let emergencyContactData = null;
+
+    // Process emergency contact if provided
+    if (emergencyContact) {
+      const { 
+        em_first_name, 
+        em_last_name, 
+        em_relationship, 
+        em_phone
+      } = emergencyContact;
+
+      // Validate required emergency contact fields
+      if (!em_first_name || !em_last_name || !em_relationship || !em_phone) {
+        return res.status(400).json({
+          success: false,
+          message: 'Emergency contact requires: em_first_name, em_last_name, em_relationship, em_phone'
+        });
+      }
+
+      // Sanitize emergency contact inputs
+      emergencyContactData = {
+        em_first_name: AuthUtils.sanitizeInput(em_first_name),
+        em_last_name: AuthUtils.sanitizeInput(em_last_name),
+        em_relationship: AuthUtils.sanitizeInput(em_relationship),
+        em_phone: AuthUtils.sanitizeInput(em_phone),
+        em_linkedin: em_linkedin ? AuthUtils.sanitizeInput(em_linkedin) : null
+      };
+    }
+
+    // Register user for event using db.js method
+    const registration = await db.registerUserForEvent(userIdNum, eventIdNum, emergencyContactData);
+
+    res.status(200).json({
+      success: true,
+      message: 'User registered for event successfully',
+      data: registration
+    });
+  } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message === 'Event not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message === 'User is already registered for this event') {
+      return res.status(409).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message.includes('Emergency contact requires')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    next(error);
+  }
+});
+
+// Get all organizations endpoint
+router.get(`${root}/organizations`, async (req, res, next) => {
+  try {
+    const organizations = await db.getOrganizations();
+
+    res.json({
+      success: true,
+      message: 'Organizations retrieved successfully',
+      data: organizations
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get user's emergency contacts endpoint
+router.get(`${root}/users/:userId/emergency-contacts`, async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate user ID
+    const userIdNum = parseInt(userId);
+    if (isNaN(userIdNum)) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID must be a valid number'
+      });
+    }
+
+    const emergencyContacts = await db.getEmergencyContacts(userIdNum);
+
+    res.json({
+      success: true,
+      message: 'Emergency contacts retrieved successfully',
+      data: emergencyContacts
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update user address endpoint
+router.put(`${root}/users/:userId/address`, async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { street_1, street_2, city, state, zip } = req.body;
+
+    // Validate user ID
+    const userIdNum = parseInt(userId);
+    if (isNaN(userIdNum)) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID must be a valid number'
+      });
+    }
+
+    // Validate required address fields
+    if (!street_1 || !city || !state || !zip) {
+      return res.status(400).json({
+        success: false,
+        message: 'Required address fields: street_1, city, state, zip'
+      });
+    }
+
+    // Sanitize address inputs
+    const addressData = {
+      street_1: AuthUtils.sanitizeInput(street_1),
+      street_2: street_2 ? AuthUtils.sanitizeInput(street_2) : null,
+      city: AuthUtils.sanitizeInput(city),
+      state: AuthUtils.sanitizeInput(state),
+      zip: AuthUtils.sanitizeInput(zip)
+    };
+
+    const result = await db.updateUserAddress(userIdNum, addressData);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message.includes('required for address')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
     next(error);
   }
 });
