@@ -10,15 +10,13 @@ const Auth = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    name_first: '',
-    name_last: '',
-    name_first_preferred: '',
+    first_name: '',
+    last_name: '',
+    // preferred_name: '',
     phone: '',
-    school_name: '',
     pronouns: '',
-    emergency_contact_name_first: '',
-    emergency_contact_name_last: '',
-    emergency_contact_phone: ''
+    user_linkedin: '',
+    user_github: ''
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
@@ -68,25 +66,25 @@ const Auth = () => {
     // Registration-specific validation
     if (!isLogin) {
       // Required fields
-      if (!formData.name_first?.trim()) {
-        newErrors.name_first = 'First name is required'
-      } else if (!/^[a-zA-Z\s'-]+$/.test(formData.name_first)) {
-        newErrors.name_first = 'First name must contain only letters, spaces, hyphens, and apostrophes'
+      if (!formData.first_name?.trim()) {
+        newErrors.first_name = 'First name is required'
+      } else if (!/^[a-zA-Z\s'-]+$/.test(formData.first_name)) {
+        newErrors.first_name = 'First name must contain only letters, spaces, hyphens, and apostrophes'
       }
 
-      if (!formData.name_last?.trim()) {
-        newErrors.name_last = 'Last name is required'
-      } else if (!/^[a-zA-Z\s'-]+$/.test(formData.name_last)) {
-        newErrors.name_last = 'Last name must contain only letters, spaces, hyphens, and apostrophes'
+      if (!formData.last_name?.trim()) {
+        newErrors.last_name = 'Last name is required'
+      } else if (!/^[a-zA-Z\s'-]+$/.test(formData.last_name)) {
+        newErrors.last_name = 'Last name must contain only letters, spaces, hyphens, and apostrophes'
       }
 
       // Optional emergency contact validation
-      if (formData.emergency_contact_name_first && !/^[a-zA-Z\s'-]+$/.test(formData.emergency_contact_name_first)) {
-        newErrors.emergency_contact_name_first = 'Emergency contact first name must contain only letters, spaces, hyphens, and apostrophes'
+      if (formData.emergency_contact_first_name && !/^[a-zA-Z\s'-]+$/.test(formData.emergency_contact_first_name)) {
+        newErrors.emergency_contact_first_name = 'Emergency contact first name must contain only letters, spaces, hyphens, and apostrophes'
       }
 
-      if (formData.emergency_contact_name_last && !/^[a-zA-Z\s'-]+$/.test(formData.emergency_contact_name_last)) {
-        newErrors.emergency_contact_name_last = 'Emergency contact last name must contain only letters, spaces, hyphens, and apostrophes'
+      if (formData.emergency_contact_last_name && !/^[a-zA-Z\s'-]+$/.test(formData.emergency_contact_last_name)) {
+        newErrors.emergency_contact_last_name = 'Emergency contact last name must contain only letters, spaces, hyphens, and apostrophes'
       }
 
       if (formData.emergency_contact_phone && !/^\+?[\d\s\-()]+$/.test(formData.emergency_contact_phone)) {
@@ -94,22 +92,30 @@ const Auth = () => {
       }
 
       // Optional field validation
-      if (formData.name_first_preferred && !/^[a-zA-Z\s'-]*$/.test(formData.name_first_preferred)) {
-        newErrors.name_first_preferred = 'Preferred name must contain only letters, spaces, hyphens, and apostrophes'
-      }
+      // if (formData.preferred_name && !/^[a-zA-Z\s'-]*$/.test(formData.preferred_name)) {
+      //   newErrors.preferred_name = 'Preferred name must contain only letters, spaces, hyphens, and apostrophes'
+      // }
 
       if (formData.phone && !/^\+?[\d\s\-()]+$/.test(formData.phone)) {
         newErrors.phone = 'Phone number format is invalid'
       }
 
-      if (!formData.school_name?.trim()) {
-        newErrors.school_name = 'School name is required'
-      } else if (formData.school_name.length > 100) {
-        newErrors.school_name = 'School name must be less than 100 characters'
-      }
-
       if (formData.pronouns && formData.pronouns.length > 20) {
         newErrors.pronouns = 'Pronouns must be less than 20 characters'
+      }
+
+      // LinkedIn validation
+      if (formData.user_linkedin && formData.user_linkedin.trim()) {
+        if (!/^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/.test(formData.user_linkedin)) {
+          newErrors.user_linkedin = 'Please provide a valid LinkedIn profile URL'
+        }
+      }
+
+      // GitHub validation
+      if (formData.user_github && formData.user_github.trim()) {
+        if (!/^https?:\/\/(www\.)?github\.com\/[\w-]+\/?$/.test(formData.user_github)) {
+          newErrors.user_github = 'Please provide a valid GitHub profile URL'
+        }
       }
 
       // Password confirmation
@@ -140,12 +146,12 @@ const Auth = () => {
         : {
             email: formData.email,
             password: formData.password,
-            name_first: formData.name_first,
-            name_last: formData.name_last,
-            name_first_preferred: formData.name_first_preferred || undefined,
+            first_name: formData.first_name,
+            last_name: formData.last_name,
             phone: formData.phone || undefined,
-            school_name: formData.school_name || undefined,
-            pronouns: formData.pronouns || undefined
+            pronouns: formData.pronouns || undefined,
+            user_linkedin: formData.user_linkedin || undefined,
+            user_github: formData.user_github || undefined
           }
 
       const response = await fetch(`http://localhost:3000${endpoint}`, {
@@ -169,15 +175,12 @@ const Auth = () => {
             email: formData.email,
             password: '',
             confirmPassword: '',
-            name_first: '',
-            name_last: '',
-            name_first_preferred: '',
+            first_name: '',
+            last_name: '',
             phone: '',
-            school_name: '',
             pronouns: '',
-            emergency_contact_name_first: '',
-            emergency_contact_name_last: '',
-            emergency_contact_phone: ''
+            user_linkedin: '',
+            user_github: ''
           })
           setErrors({ general: data.message || 'Registration successful! Please login.' })
           return
@@ -236,15 +239,12 @@ const Auth = () => {
       email: '',
       password: '',
       confirmPassword: '',
-      name_first: '',
-      name_last: '',
-      name_first_preferred: '',
+      first_name: '',
+      last_name: '',
       phone: '',
-      school_name: '',
       pronouns: '',
-      emergency_contact_name_first: '',
-      emergency_contact_name_last: '',
-      emergency_contact_phone: ''
+      user_linkedin: '',
+      user_github: ''
     })
     setErrors({})
   }
@@ -340,42 +340,42 @@ const Auth = () => {
                 {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="name_first" className="block text-sm font-semibold text-white mb-2">
+                    <label htmlFor="first_name" className="block text-sm font-semibold text-white mb-2">
                       First Name *
                     </label>
                     <input
-                      id="name_first"
-                      name="name_first"
+                      id="first_name"
+                      name="first_name"
                       type="text"
-                      value={formData.name_first}
+                      value={formData.first_name}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
-                        errors.name_first ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                        errors.first_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
                       }`}
                       placeholder="John"
                     />
-                    {errors.name_first && (
-                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.name_first}</p>
+                    {errors.first_name && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.first_name}</p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="name_last" className="block text-sm font-semibold text-white mb-2">
+                    <label htmlFor="last_name" className="block text-sm font-semibold text-white mb-2">
                       Last Name *
                     </label>
                     <input
-                      id="name_last"
-                      name="name_last"
+                      id="last_name"
+                      name="last_name"
                       type="text"
-                      value={formData.name_last}
+                      value={formData.last_name}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
-                        errors.name_last ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                        errors.last_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
                       }`}
                       placeholder="Doe"
                     />
-                    {errors.name_last && (
-                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.name_last}</p>
+                    {errors.last_name && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.last_name}</p>
                     )}
                   </div>
                 </div>
@@ -387,70 +387,28 @@ const Auth = () => {
 
                 {/* Registration Additional Fields (reordered for intuitiveness) */}
                 <div className="space-y-5">
-                  {/* Preferred Name & Pronouns */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="name_first_preferred" className="block text-sm font-medium text-white mb-2">
-                        Preferred Name
-                      </label>
-                      <input
-                        id="name_first_preferred"
-                        name="name_first_preferred"
-                        type="text"
-                        value={formData.name_first_preferred}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
-                          errors.name_first_preferred ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
-                        }`}
-                        placeholder="Johnny"
-                      />
-                      {errors.name_first_preferred && (
-                        <p className="text-red-500 text-xs mt-1 font-medium">{errors.name_first_preferred}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="pronouns" className="block text-sm font-medium text-white mb-2">
-                        Pronouns
-                      </label>
-                      <input
-                        id="pronouns"
-                        name="pronouns"
-                        type="text"
-                        value={formData.pronouns}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
-                          errors.pronouns ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
-                        }`}
-                        placeholder="they/them"
-                      />
-                      {errors.pronouns && (
-                        <p className="text-red-500 text-xs mt-1 font-medium">{errors.pronouns}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Required School field before optional contact */}
+                  {/* Pronouns */}
                   <div>
-                    <label htmlFor="school_name" className="block text-sm font-semibold text-white mb-2">
-                      School/Institution *
+                    <label htmlFor="pronouns" className="block text-sm font-medium text-white mb-2">
+                      Pronouns
                     </label>
                     <input
-                      id="school_name"
-                      name="school_name"
+                      id="pronouns"
+                      name="pronouns"
                       type="text"
-                      value={formData.school_name}
+                      value={formData.pronouns}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
-                        errors.school_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                        errors.pronouns ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
                       }`}
-                      placeholder="Ozarks Technical Community College"
+                      placeholder="they/them"
                     />
-                    {errors.school_name && (
-                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.school_name}</p>
+                    {errors.pronouns && (
+                      <p className="text-red-500 text-xs mt-1 font-medium">{errors.pronouns}</p>
                     )}
                   </div>
 
-                  {/* Phone alone below */}
+                  {/* Phone field */}
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-white mb-2">
                       Phone
@@ -469,6 +427,48 @@ const Auth = () => {
                     {errors.phone && (
                       <p className="text-red-500 text-xs mt-1 font-medium">{errors.phone}</p>
                     )}
+                  </div>
+
+                  {/* LinkedIn and GitHub */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="user_linkedin" className="block text-sm font-medium text-white mb-2">
+                        LinkedIn Profile
+                      </label>
+                      <input
+                        id="user_linkedin"
+                        name="user_linkedin"
+                        type="url"
+                        value={formData.user_linkedin}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
+                          errors.user_linkedin ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                        }`}
+                        placeholder="https://linkedin.com/in/yourprofile"
+                      />
+                      {errors.user_linkedin && (
+                        <p className="text-red-500 text-xs mt-1 font-medium">{errors.user_linkedin}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="user_github" className="block text-sm font-medium text-white mb-2">
+                        GitHub Profile
+                      </label>
+                      <input
+                        id="user_github"
+                        name="user_github"
+                        type="url"
+                        value={formData.user_github}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
+                          errors.user_github ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                        }`}
+                        placeholder="https://github.com/yourusername"
+                      />
+                      {errors.user_github && (
+                        <p className="text-red-500 text-xs mt-1 font-medium">{errors.user_github}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Login = require('../models/Login');
 const AuthUtils = require('../utils/auth');
 const EmailService = require('../utils/email');
 const db = require('../utils/db');
@@ -19,50 +20,25 @@ const { authenticateToken, requireVerification } = require('../middleware/auth')
 // API root path for database endpoints
 const root = '/api/v1';
 
-// In-memory storage for demonstration (replace with database in production)
-let users = [];
-let userIdCounter = 1;
-
-// Helper function to find user by email
-const findUserByEmail = (email) => {
-  return users.find(user => user.email === email);
-};
-
-// Helper function to find user by ID
-const findUserById = (id) => {
-  return users.find(user => user.user_id === id);
-};
-
-// Helper function to find user by verification token
-const findUserByVerificationToken = (token) => {
-  return users.find(user => user.email_verification_token === token);
-};
-
-// Helper function to find user by password reset token
-const findUserByPasswordResetToken = (token) => {
-  return users.find(user => user.password_reset_token === token);
-};
-
 // Register new user
 router.post('/register', validateRegistration, handleValidationErrors, async (req, res) => {
   try {
     const {
       email,
       password,
-      name_first,
-      name_last,
-      name_first_preferred,
+      first_name,
+      last_name,
       phone,
-      school_name,
       pronouns,
+      user_linkedin,
+      user_github
     } = req.body;
 
-    // Check if user already exists
-    const existingUser = findUserByEmail(email);
-    if (existingUser) {
+    // Validate required fields
+    if (!email || !password || !first_name || !last_name) {
       return res.status(400).json({
         success: false,
-        message: 'User with this email already exists'
+        message: 'Email, password, first name, and last name are required fields'
       });
     }
 
@@ -76,47 +52,31 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
       });
     }
 
-    // Hash password
-    const { hash, salt } = await AuthUtils.hashPassword(password);
-
-    // Generate email verification token
-    const verificationToken = AuthUtils.generateVerificationToken();
-
-    // Create new user
-    const newUser = new User({
-      user_id: userIdCounter++,
+    // Create user data object
+    const userData = {
       email: AuthUtils.sanitizeInput(email),
-      password_hash: hash,
-      password_salt: salt,
-      name_first: AuthUtils.sanitizeInput(name_first),
-      name_last: AuthUtils.sanitizeInput(name_last),
-      name_first_preferred: name_first_preferred ? AuthUtils.sanitizeInput(name_first_preferred) : null,
+      password,
+      first_name: AuthUtils.sanitizeInput(first_name),
+      last_name: AuthUtils.sanitizeInput(last_name),
       phone: phone ? AuthUtils.sanitizeInput(phone) : null,
-      school_name: school_name ? AuthUtils.sanitizeInput(school_name) : null,
       pronouns: pronouns ? AuthUtils.sanitizeInput(pronouns) : null,
-      created_at: new Date(),
-      updated_at: new Date()
-    });
+      user_linkedin: user_linkedin ? AuthUtils.sanitizeInput(user_linkedin) : null,
+      user_github: user_github ? AuthUtils.sanitizeInput(user_github) : null
+    };
 
-    // Set email verification token
-    newUser.setEmailVerificationToken(verificationToken);
-
-    // Validate user data
-    const validation = newUser.validateRegistration();
-    if (!validation.isValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Registration validation failed',
-        errors: validation.errors
-      });
-    }
-
-    // Save user (in production, save to database)
-    users.push(newUser);
-
+    // Create user and login using db method
+    const result = await db.createUser(userData);
+    
+    // Generate JWT-based email verification token
+    const verificationToken = AuthUtils.generateToken({
+      user_id: result.user.user_id,
+      email: result.user.email,
+      type: 'email_verification'
+    }, '24h'); // 24 hour expiration for email verification
+    
     let emailResult = { sent: false, skipped: false };
     try {
-      emailResult = await EmailService.sendVerificationEmail(newUser, verificationToken);
+      emailResult = await EmailService.sendVerificationEmail(result.user, verificationToken);
       if (!emailResult.sent) {
         console.warn('[Register] Verification email not sent:', emailResult.reason || emailResult.error);
       }
@@ -132,7 +92,7 @@ router.post('/register', validateRegistration, handleValidationErrors, async (re
     const baseResponse = {
       success: true,
       message: 'User registered successfully. Please check your email to verify your account.',
-      user: newUser.toPublicJSON()
+      user: result.user
     };
 
     if (process.env.NODE_ENV !== 'production') {
@@ -159,44 +119,24 @@ router.post('/login', validateLogin, handleValidationErrors, async (req, res) =>
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = findUserByEmail(email);
-    if (!user) {
+    // Authenticate user using database method
+    const authResult = await db.authenticateUser(email, password);
+    
+    if (!authResult.success) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: authResult.message
       });
     }
 
-    // Check if account is locked
-    if (user.isAccountLocked()) {
-      return res.status(423).json({
-        success: false,
-        message: 'Account is temporarily locked due to too many failed login attempts. Please try again later.'
-      });
-    }
-
-    // Verify password
-    const isPasswordValid = await AuthUtils.verifyPassword(password, user.password_hash);
-    if (!isPasswordValid) {
-      user.incrementFailedLoginAttempts();
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-
-    // Reset failed login attempts on successful login
-    user.resetFailedLoginAttempts();
-
-    // Generate tokens
-    const accessToken = AuthUtils.generateToken(user.getJWTPayload());
-    const refreshToken = AuthUtils.generateRefreshToken({ user_id: user.user_id });
+    // Generate tokens using Login object methods
+    const accessToken = authResult.login.generateJWTToken();
+    const refreshToken = AuthUtils.generateRefreshToken({ user_id: authResult.user.user_id });
 
     res.json({
       success: true,
       message: 'Login successful',
-      user: user.toPublicJSON(),
+      user: authResult.user.toPublicJSON(),
       tokens: {
         access_token: accessToken,
         refresh_token: refreshToken,
@@ -218,23 +158,33 @@ router.post('/verify-email', validateEmailVerification, handleValidationErrors, 
   try {
     const { token } = req.body;
 
-    const user = findUserByVerificationToken(token);
-    if (!user) {
+    // Verify JWT token locally
+    let decoded;
+    try {
+      decoded = AuthUtils.verifyToken(token);
+    } catch (error) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid verification token'
+        message: 'Invalid or expired verification token'
       });
     }
 
-    const result = user.verifyEmailWithToken(token);
+    // Check if this is an email verification token
+    if (decoded.type !== 'email_verification') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid token type'
+      });
+    }
+
+    // Update email verification status in database
+    const result = await db.updateEmailVerificationStatus(decoded.user_id, true);
     if (!result.success) {
       return res.status(400).json({
         success: false,
         message: result.message
       });
     }
-
-    user.updated_at = new Date();
 
     res.json({
       success: true,
@@ -254,23 +204,52 @@ router.post('/verify-email', validateEmailVerification, handleValidationErrors, 
 router.get('/verify-email/:token', async (req, res) => {
   try {
     const { token } = req.params;
-    const user = findUserByVerificationToken(token);
-    if (!user) {
+    
+    // Verify JWT token locally
+    let decoded;
+    try {
+      decoded = AuthUtils.verifyToken(token);
+    } catch (error) {
+      // Optional redirect to frontend if configured
+      if (process.env.FRONTEND_BASE_URL) {
+        const redirectUrl = `${process.env.FRONTEND_BASE_URL.replace(/\/$/, '')}/email-verified?status=error&message=${encodeURIComponent('Invalid or expired verification token')}`;
+        return res.redirect(302, redirectUrl);
+      }
+      
       return res.status(400).json({
         success: false,
-        message: 'Invalid verification token'
+        message: 'Invalid or expired verification token'
       });
     }
 
-    const result = user.verifyEmailWithToken(token);
+    // Check if this is an email verification token
+    if (decoded.type !== 'email_verification') {
+      // Optional redirect to frontend if configured
+      if (process.env.FRONTEND_BASE_URL) {
+        const redirectUrl = `${process.env.FRONTEND_BASE_URL.replace(/\/$/, '')}/email-verified?status=error&message=${encodeURIComponent('Invalid token type')}`;
+        return res.redirect(302, redirectUrl);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid token type'
+      });
+    }
+
+    // Update email verification status in database
+    const result = await db.updateEmailVerificationStatus(decoded.user_id, true);
     if (!result.success) {
+      // Optional redirect to frontend if configured
+      if (process.env.FRONTEND_BASE_URL) {
+        const redirectUrl = `${process.env.FRONTEND_BASE_URL.replace(/\/$/, '')}/email-verified?status=error&message=${encodeURIComponent(result.message)}`;
+        return res.redirect(302, redirectUrl);
+      }
+      
       return res.status(400).json({
         success: false,
         message: result.message
       });
     }
-
-    user.updated_at = new Date();
 
     // Optional redirect to frontend if configured
     if (process.env.FRONTEND_BASE_URL) {
@@ -284,6 +263,13 @@ router.get('/verify-email/:token', async (req, res) => {
     });
   } catch (error) {
     console.error('Email verification (GET) error:', error);
+    
+    // Optional redirect to frontend if configured
+    if (process.env.FRONTEND_BASE_URL) {
+      const redirectUrl = `${process.env.FRONTEND_BASE_URL.replace(/\/$/, '')}/email-verified?status=error&message=${encodeURIComponent('Internal server error')}`;
+      return res.redirect(302, redirectUrl);
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error during email verification'
@@ -295,28 +281,26 @@ router.get('/verify-email/:token', async (req, res) => {
 router.post('/resend-verification', validateResendVerification, handleValidationErrors, async (req, res) => {
   try {
     const { email } = req.body;
-    const user = findUserByEmail(email);
-    if (!user) {
-      // Do not reveal existence
+    
+    const result = await db.resendEmailVerification(email);
+    
+    if (!result.success) {
+      // Don't reveal existence/status
       return res.json({
         success: true,
         message: 'If the account exists and is unverified, a new verification email was sent.'
       });
     }
 
-    if (user.email_is_verified) {
-      return res.json({
-        success: true,
-        message: 'Email already verified.'
-      });
-    }
+    // Generate JWT-based email verification token
+    const verificationToken = AuthUtils.generateToken({
+      user_id: result.user.user_id,
+      email: result.user.email,
+      type: 'email_verification'
+    }, '24h'); // 24 hour expiration for email verification
 
-    // Generate fresh token
-    const newToken = AuthUtils.generateVerificationToken();
-    user.setEmailVerificationToken(newToken);
-    user.updated_at = new Date();
-
-    const result = await EmailService.sendVerificationEmail(user, newToken);
+    // Send email with new token
+    const emailResult = await EmailService.sendVerificationEmail(result.user, verificationToken);
 
     const response = {
       success: true,
@@ -325,10 +309,10 @@ router.post('/resend-verification', validateResendVerification, handleValidation
 
     if (process.env.NODE_ENV !== 'production') {
       response.dev = {
-        sent: result.sent,
-        messageId: result.messageId,
-        previewUrl: result.previewUrl,
-        verification_token: newToken
+        sent: emailResult.sent,
+        messageId: emailResult.messageId,
+        previewUrl: emailResult.previewUrl,
+        verification_token: verificationToken
       };
     }
 
@@ -347,23 +331,21 @@ router.post('/forgot-password', validatePasswordResetRequest, handleValidationEr
   try {
     const { email } = req.body;
 
-    const user = findUserByEmail(email);
-    if (!user) {
-      // Don't reveal if email exists or not
-      return res.json({
-        success: true,
-        message: 'If an account with that email exists, a password reset link has been sent.'
-      });
+    const result = await db.setPasswordResetToken(email);
+    
+    if (result.success) {
+      // Generate JWT-based password reset token
+      const resetToken = AuthUtils.generateToken({
+        user_id: result.user.user_id,
+        email: result.user.email,
+        type: 'password_reset'
+      }, '1h'); // 1 hour expiration for password reset
+      
+      // TODO: Send password reset email
+      console.log(`Password reset token for ${email}: ${resetToken}`);
     }
 
-    // Generate password reset token
-    const resetToken = AuthUtils.generatePasswordResetToken();
-    user.setPasswordResetToken(resetToken);
-    user.updated_at = new Date();
-
-    // TODO: Send password reset email
-    console.log(`Password reset token for ${email}: ${resetToken}`);
-
+    // Always return success to prevent email enumeration
     res.json({
       success: true,
       message: 'If an account with that email exists, a password reset link has been sent.'
@@ -383,19 +365,22 @@ router.post('/reset-password', validatePasswordReset, handleValidationErrors, as
   try {
     const { token, password } = req.body;
 
-    const user = findUserByPasswordResetToken(token);
-    if (!user) {
+    // Verify JWT token locally
+    let decoded;
+    try {
+      decoded = AuthUtils.verifyToken(token);
+    } catch (error) {
       return res.status(400).json({
         success: false,
         message: 'Invalid or expired reset token'
       });
     }
 
-    const tokenValidation = user.verifyPasswordResetToken(token);
-    if (!tokenValidation.success) {
+    // Check if this is a password reset token
+    if (decoded.type !== 'password_reset') {
       return res.status(400).json({
         success: false,
-        message: tokenValidation.message
+        message: 'Invalid token type'
       });
     }
 
@@ -409,12 +394,15 @@ router.post('/reset-password', validatePasswordReset, handleValidationErrors, as
       });
     }
 
-    // Hash new password
-    const { hash, salt } = await AuthUtils.hashPassword(password);
-    user.password_hash = hash;
-    user.password_salt = salt;
-    user.clearPasswordResetToken();
-    user.updated_at = new Date();
+    // Update password using database method
+    const result = await db.updateUserPassword(decoded.user_id, password);
+    
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
 
     res.json({
       success: true,
@@ -431,9 +419,9 @@ router.post('/reset-password', validatePasswordReset, handleValidationErrors, as
 });
 
 // Get current user profile
-router.get('/profile', authenticateToken, (req, res) => {
+router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const user = findUserById(req.user.user_id);
+    const user = await db.getUserById(req.user.user_id);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -456,39 +444,37 @@ router.get('/profile', authenticateToken, (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authenticateToken, validateProfileUpdate, handleValidationErrors, (req, res) => {
+router.put('/profile', authenticateToken, validateProfileUpdate, handleValidationErrors, async (req, res) => {
   try {
-    const user = findUserById(req.user.user_id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
     const {
-      name_first,
-      name_last,
-      name_first_preferred,
+      first_name,
+      last_name,
+      preferred_name,
+      school,
       phone,
-      school_name,
-      pronouns
+      pronouns,
+      user_linkedin,
+      user_github
     } = req.body;
 
-    // Update only provided fields
-    if (name_first !== undefined) user.name_first = AuthUtils.sanitizeInput(name_first);
-    if (name_last !== undefined) user.name_last = AuthUtils.sanitizeInput(name_last);
-    if (name_first_preferred !== undefined) user.name_first_preferred = name_first_preferred ? AuthUtils.sanitizeInput(name_first_preferred) : null;
-    if (phone !== undefined) user.phone = phone ? AuthUtils.sanitizeInput(phone) : null;
-    if (school_name !== undefined) user.school_name = school_name ? AuthUtils.sanitizeInput(school_name) : null;
-    if (pronouns !== undefined) user.pronouns = pronouns ? AuthUtils.sanitizeInput(pronouns) : null;
+    // Sanitize inputs
+    const updateData = {};
+    if (first_name !== undefined) updateData.first_name = AuthUtils.sanitizeInput(first_name);
+    if (last_name !== undefined) updateData.last_name = AuthUtils.sanitizeInput(last_name);
+    if (preferred_name !== undefined) updateData.preferred_name = preferred_name ? AuthUtils.sanitizeInput(preferred_name) : null;
+    if (school !== undefined) updateData.school = school ? AuthUtils.sanitizeInput(school) : null;
+    if (phone !== undefined) updateData.phone = phone ? AuthUtils.sanitizeInput(phone) : null;
+    if (pronouns !== undefined) updateData.pronouns = pronouns ? AuthUtils.sanitizeInput(pronouns) : null;
+    if (user_linkedin !== undefined) updateData.user_linkedin = user_linkedin ? AuthUtils.sanitizeInput(user_linkedin) : null;
+    if (user_github !== undefined) updateData.user_github = user_github ? AuthUtils.sanitizeInput(user_github) : null;
 
-    user.updated_at = new Date();
+    // Update user using database method
+    const updatedUser = await db.updateUserProfile(req.user.user_id, updateData);
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      user: user.toPublicJSON()
+      user: updatedUser.toPublicJSON()
     });
 
   } catch (error) {
@@ -513,7 +499,7 @@ router.post('/refresh-token', async (req, res) => {
     }
 
     const decoded = AuthUtils.verifyToken(refresh_token);
-    const user = findUserById(decoded.user_id);
+    const user = await db.getUserById(decoded.user_id);
 
     if (!user) {
       return res.status(401).json({
@@ -522,7 +508,7 @@ router.post('/refresh-token', async (req, res) => {
       });
     }
 
-    // Generate new access token
+    // Generate new access token using User methods
     const accessToken = AuthUtils.generateToken(user.getJWTPayload());
 
     res.json({
@@ -549,159 +535,6 @@ router.post('/logout', authenticateToken, (req, res) => {
   });
 });
 
-// endpoints
-
-// Create user endpoint
-router.post(`${root}/users`, async (req, res, next) => {
-  try {
-    const { 
-      email, 
-      password, 
-      org_id,
-      first_name, 
-      last_name,
-      pronouns,
-      phone,
-      user_linkedin,
-      user_github
-    } = req.body;
-    
-    // Validate required fields
-    if (!email || !password || !org_id || !first_name || !last_name) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: email, password, org_id, first_name, last_name'
-      });
-    }
-
-    // Validate password strength
-    const passwordValidation = AuthUtils.validatePasswordStrength(password);
-    if (!passwordValidation.isValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password does not meet security requirements',
-        errors: passwordValidation.errors
-      });
-    }
-
-    // Sanitize inputs
-    const userData = {
-      email: AuthUtils.sanitizeInput(email),
-      password,
-      org_id,
-      first_name: AuthUtils.sanitizeInput(first_name),
-      last_name: AuthUtils.sanitizeInput(last_name),
-      pronouns: pronouns ? AuthUtils.sanitizeInput(pronouns) : null,
-      phone: phone ? AuthUtils.sanitizeInput(phone) : null,
-      user_linkedin: user_linkedin ? AuthUtils.sanitizeInput(user_linkedin) : null,
-      user_github: user_github ? AuthUtils.sanitizeInput(user_github) : null
-    };
-
-    // Create user using db.js method
-    const user = await db.createUser(userData);
-
-    res.status(200).json({
-      success: true,
-      message: 'User created successfully',
-      data: user
-    });
-  } catch (error) {
-    if (error.message === 'User with this email already exists') {
-      return res.status(409).json({
-        success: false,
-        message: error.message
-      });
-    }
-    if (error.message === 'Invalid organization ID') {
-      return res.status(400).json({
-        success: false,
-        message: error.message
-      });
-    }
-    next(error);
-  }
-});
-
-// Login endpoint
-router.post(`${root}/auth/login`, async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required'
-      });
-    }
-
-    const userData = await db.authenticateUser(email, password);
-
-    res.json({
-      success: true,
-      data: userData
-    });
-  } catch (error) {
-    if (error.message === 'Invalid credentials') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
-    next(error);
-  }
-});
-
-// Get user profile endpoint
-router.get(`${root}/users/:userId`, async (req, res, next) => {
-  try {
-    const user = await db.getUserById(req.params.userId);
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: user
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Update user endpoint
-router.put(`${root}/users/:userId`, async (req, res, next) => {
-  try {
-    const { first_name, last_name, email } = req.body;
-    const updateData = {};
-
-    // Only include fields that are provided
-    if (first_name) updateData.first_name = first_name;
-    if (last_name) updateData.last_name = last_name;
-    if (email) updateData.email = email;
-
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No valid fields provided for update'
-      });
-    }
-
-    const updatedUser = await db.updateUser(req.params.userId, updateData);
-
-    res.json({
-      success: true,
-      data: updatedUser
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Register user for event endpoint
 router.post(`${root}/users/:userId/events/:eventId/register`, async (req, res, next) => {
   try {
     const { userId, eventId } = req.params;

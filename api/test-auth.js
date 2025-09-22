@@ -9,11 +9,12 @@ let refreshToken = '';
 const testUser = {
   email: 'test@example.com',
   password: 'TestPassword123!',
-  name_first: 'Test',
-  name_last: 'User',
-  emergency_contact_name_first: 'Emergency',
-  emergency_contact_name_last: 'Contact',
-  emergency_contact_phone: '+1234567890'
+  first_name: 'Test',
+  last_name: 'User',
+  phone: '+1234567890',
+  pronouns: 'they/them',
+  user_linkedin: 'https://linkedin.com/in/testuser',
+  user_github: 'https://github.com/testuser'
 };
 
 // Helper function to make requests

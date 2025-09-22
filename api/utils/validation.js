@@ -13,41 +13,40 @@ const validateRegistration = [
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
   
-  body('name_first')
+  body('first_name')
     .trim()
     .isLength({ min: 1, max: 50 })
     .matches(/^[a-zA-Z\s'-]+$/)
     .withMessage('First name is required and must contain only letters, spaces, hyphens, and apostrophes'),
   
-  body('name_last')
+  body('last_name')
     .trim()
     .isLength({ min: 1, max: 50 })
     .matches(/^[a-zA-Z\s'-]+$/)
     .withMessage('Last name is required and must contain only letters, spaces, hyphens, and apostrophes'),
-  
-  body('name_first_preferred')
-    .optional()
-    .trim()
-    .isLength({ max: 50 })
-    .matches(/^[a-zA-Z\s'-]*$/)
-    .withMessage('Preferred name must contain only letters, spaces, hyphens, and apostrophes'),
   
   body('phone')
     .optional()
     .matches(/^\+?[\d\s\-\(\)]+$/)
     .withMessage('Phone number format is invalid'),
   
-  body('school_name')
-    .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage('School name must be less than 100 characters'),
-  
   body('pronouns')
     .optional()
     .trim()
     .isLength({ max: 20 })
     .withMessage('Pronouns must be less than 20 characters'),
+
+  body('user_linkedin')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('LinkedIn URL must be less than 200 characters'),
+
+  body('user_github')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('GitHub URL must be less than 200 characters'),
 ];
 
 // Validation rules for user login
@@ -100,21 +99,21 @@ const validateResendVerification = [
 
 // Validation rules for profile update
 const validateProfileUpdate = [
-  body('name_first')
+  body('first_name')
     .optional()
     .trim()
     .isLength({ min: 1, max: 50 })
     .matches(/^[a-zA-Z\s'-]+$/)
     .withMessage('First name must contain only letters, spaces, hyphens, and apostrophes'),
   
-  body('name_last')
+  body('last_name')
     .optional()
     .trim()
     .isLength({ min: 1, max: 50 })
     .matches(/^[a-zA-Z\s'-]+$/)
     .withMessage('Last name must contain only letters, spaces, hyphens, and apostrophes'),
   
-  body('name_first_preferred')
+  body('preferred_name')
     .optional()
     .trim()
     .isLength({ max: 50 })
@@ -126,7 +125,7 @@ const validateProfileUpdate = [
     .matches(/^\+?[\d\s\-\(\)]+$/)
     .withMessage('Phone number format is invalid'),
   
-  body('school_name')
+  body('school')
     .optional()
     .trim()
     .isLength({ max: 100 })
@@ -136,7 +135,19 @@ const validateProfileUpdate = [
     .optional()
     .trim()
     .isLength({ max: 20 })
-    .withMessage('Pronouns must be less than 20 characters')
+    .withMessage('Pronouns must be less than 20 characters'),
+
+  body('user_linkedin')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('LinkedIn URL must be less than 200 characters'),
+
+  body('user_github')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('GitHub URL must be less than 200 characters')
 ];
 
 // Middleware to handle validation errors
