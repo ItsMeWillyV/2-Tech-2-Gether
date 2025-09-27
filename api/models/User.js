@@ -1,79 +1,27 @@
 class User {
-  constructor({
-    user_id = null,
-    first_name = null,
-    last_name = null,
-    email = null,
-    phone = null,
-    pronouns = null,
-    user_linkedin = null,
-    user_github = null
-  } = {}) {
-    // Core database fields from ERD
-    this.user_id = user_id;
-    this.first_name = first_name;
-    this.last_name = last_name;
-    this.email = email;
-    this.phone = phone;
-    this.pronouns = pronouns;
-    this.user_linkedin = user_linkedin;
-    this.user_github = user_github;
-  }
+  constructor(data = {}) {
 
-  // Get full name
-  getFullName() {
-    return `${this.first_name} ${this.last_name}`;
-  }
-
-  // Get emergency contact full name
-  getEmergencyContactName() {
-    if (this.emergency_name) {
-      return this.emergency_name;
-    }
-    return null;
-  }
-
-  // Check if user is verified
-  isVerified() {
-    return this.email_is_verified;
-  }
-
-  // Check permission level
-  hasPermissionLevel(requiredLevel) {
-    return this.permission_level >= requiredLevel;
-  }
-
-  // Validate required fields for registration
-  validateRegistration() {
-    const errors = [];
+    // User profile
+    this.user_id = data.user_id || null;
+    this.first_name = data.first_name || null;
+    this.last_name = data.last_name || null;
+    this.pre_name = data.pre_name || null;
+    this.email = data.email || null;
+    this.phone = data.phone || null;
+    this.pronouns = data.pronouns || null;
     
-    if (!this.email) errors.push('Email is required');
-    if (!this.first_name) errors.push('First name is required');
-    if (!this.last_name) errors.push('Last name is required');
+    // Social profiles
+    this.user_linkedin = data.user_linkedin || null;
+    this.user_github = data.user_github || null;
     
-    return {
-      isValid: errors.length === 0,
-      errors: errors
-    };
-  }
-
-  // Sanitize user data for public display
-  toPublicJSON() {
-    return {
-      user_id: this.user_id,
-      first_name: this.first_name,
-      last_name: this.last_name,
-      email: this.email,
-      phone: this.phone,
-      pronouns: this.pronouns,
-      user_linkedin: this.user_linkedin,
-      user_github: this.user_github
-    };
-  }
-
-  // Convert to JSON (excludes sensitive data by default)
-  toJSON() {
-    return this.toPublicJSON();
+    // Membership
+    this.mem_id = data.mem_id || 1;
+    
+    // Emergency contact
+    this.em_first_name = data.em_first_name || null;
+    this.em_last_name = data.em_last_name || null;
+    this.em_relationship = data.em_relationship || null;
+    this.em_phone = data.em_phone || null;
   }
 }
 

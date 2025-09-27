@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Login = require('../models/Login');
+const AuthUtils = require('./AuthUtils');
 
 // Database connection configuration
 const dbConfig = {
@@ -41,7 +42,7 @@ const db = {
       await connection.beginTransaction();
 
       const { 
-        email, // doubles as username
+        email, // required
         password, // required
         first_name, // required
         last_name, // required
@@ -103,11 +104,11 @@ const db = {
       const userId = userResult.insertId;
 
       // Hash password and create login entry
-      const hashedPassword = await Login.hashPassword(password);
+      const { hash, salt } = await AuthUtils.hashPassword(password);
       
       await connection.execute(
-        `INSERT INTO login (user_id, username, password, is_admin) VALUES (?, ?, ?, ?)`,
-        [userId, email, hashedPassword, 0] // email as username, is_admin=0 for regular user
+        `INSERT INTO login (user_id, username, password, salt, is_admin) VALUES (?, ?, ?, ?, ?)`,
+        [userId, email, hash, salt, 0] // email as username, salt stored separately, is_admin=0 for regular user
       );
 
       await connection.commit();
@@ -127,7 +128,8 @@ const db = {
       const createdLogin = new Login({
         user_id: userId,
         username: email,
-        password: hashedPassword,
+        password: hash,
+        salt: salt,
         is_admin: 0
       });
       
@@ -425,13 +427,13 @@ const db = {
     try {
       await connection.beginTransaction();
       
-      // Hash new password
-      const hashedPassword = await Login.hashPassword(newPassword);
+      // Hash new password with new salt
+      const { hash, salt } = await AuthUtils.hashPassword(newPassword);
       
-      // Update login with new password
+      // Update login with new password and salt
       const [result] = await connection.execute(
-        'UPDATE login SET password_hash = ?, updated_at = NOW() WHERE user_id = ?',
-        [hashedPassword, userId]
+        'UPDATE login SET password = ?, salt = ?, updated_at = NOW() WHERE user_id = ?',
+        [hash, salt, userId]
       );
       
       if (result.affectedRows === 0) {
@@ -486,6 +488,62 @@ const db = {
       }
       
       return new Login(loginRows[0]);
+      
+    } catch (error) {
+      throw error;
+    } finally {
+      connection.release();
+    }
+  },
+
+  // Authenticate user with email and password
+  authenticateUser: async (email, password) => {
+    const connection = await pool.getConnection();
+    try {
+      // Get user and login data
+      const [userRows] = await connection.execute(
+        'SELECT u.*, l.user_id as login_user_id, l.username, l.password, l.salt, l.is_admin, l.email_is_verified FROM user u INNER JOIN login l ON u.user_id = l.user_id WHERE l.username = ?',
+        [email]
+      );
+      
+      if (userRows.length === 0) {
+        return { success: false, message: 'Invalid credentials' };
+      }
+      
+      const userData = userRows[0];
+      
+      // Create Login instance with salt for password verification
+      const login = new Login({
+        user_id: userData.login_user_id,
+        username: userData.username,
+        password: userData.password,
+        salt: userData.salt,
+        is_admin: userData.is_admin
+      });
+      
+      // Verify password using stored salt
+      const isPasswordValid = await login.verifyPassword(password);
+      if (!isPasswordValid) {
+        return { success: false, message: 'Invalid credentials' };
+      }
+      
+      // Create User instance
+      const user = new User({
+        user_id: userData.user_id,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: userData.email,
+        phone: userData.phone,
+        pronouns: userData.pronouns,
+        user_linkedin: userData.user_linkedin,
+        user_github: userData.user_github
+      });
+      
+      return {
+        success: true,
+        user: user,
+        login: login
+      };
       
     } catch (error) {
       throw error;
