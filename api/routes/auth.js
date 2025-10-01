@@ -21,8 +21,8 @@ const router = express.Router();
 
 // Rate limiting for authentication routes
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 15, // limit each IP to 15 requests per windowMs
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -30,7 +30,7 @@ const authLimiter = rateLimit({
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 requests per windowMs
+  max: 50, // limit each IP to 50 requests per windowMs
   message: 'Too many requests, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -68,7 +68,8 @@ router.post('/register', generalLimiter, validateRegistration, async (req, res) 
       em_first_name,
       em_last_name,
       em_relationship,
-      em_phone
+      em_phone,
+      preferred_name
     } = req.body;
 
     // Sanitize inputs
@@ -83,7 +84,8 @@ router.post('/register', generalLimiter, validateRegistration, async (req, res) 
       em_first_name: em_first_name ? AuthUtils.sanitizeInput(em_first_name) : null,
       em_last_name: em_last_name ? AuthUtils.sanitizeInput(em_last_name) : null,
       em_relationship: em_relationship ? AuthUtils.sanitizeInput(em_relationship) : null,
-      em_phone: em_phone ? AuthUtils.sanitizeInput(em_phone) : null
+      em_phone: em_phone ? AuthUtils.sanitizeInput(em_phone) : null,
+      pre_name: preferred_name ? AuthUtils.sanitizeInput(preferred_name) : null
     };
 
     // Validate password strength
@@ -194,7 +196,8 @@ router.post('/login', authLimiter, validateLogin, async (req, res) => {
         user_linkedin: result.user.user_linkedin,
         user_github: result.user.user_github,
         isAdmin: result.login.is_admin,
-        emailVerified: result.login.email_is_verified
+        emailVerified: result.login.email_is_verified,
+        pre_name: result.user.pre_name
       }
     });
 
@@ -232,7 +235,7 @@ router.post('/logout', (req, res) => {
 });
 
 // POST /api/auth/refresh - Refresh access token
-router.post('/refresh', generalLimiter, (req, res) => {
+router.post('/refresh', generalLimiter, async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
 
@@ -246,6 +249,15 @@ router.post('/refresh', generalLimiter, (req, res) => {
     // Verify refresh token
     const decoded = AuthUtils.verifyToken(refreshToken);
 
+    // Get current user data
+    const user = await db.getUserById(decoded.userId)
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
     // Generate new access token
     const newAccessToken = AuthUtils.generateToken({
       userId: decoded.userId,
@@ -255,7 +267,18 @@ router.post('/refresh', generalLimiter, (req, res) => {
 
     res.json({
       success: true,
-      accessToken: newAccessToken
+      accessToken: newAccessToken,
+      user:{
+        user_id: user.user_id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone: user.phone,
+        pronouns: user.pronouns,
+        user_linkedin: user.user_linkedin,
+        user_github: user.user_github,
+        pre_name: user.pre_name
+      }
     });
 
   } catch (error) {
@@ -305,6 +328,38 @@ router.post('/verify-email', generalLimiter, validateEmailVerification, async (r
       success: false,
       message: 'Internal server error during email verification'
     });
+  }
+});
+
+// GET /api/auth/verify-email/:token - Direct API verification (for email links)
+router.get('/verify-email/:token', generalLimiter, async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification token is required'
+      });
+    }
+
+    const result = await db.verifyEmailToken(token);
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message
+      });
+    }
+
+    // Redirect to frontend success page or return success response
+    const frontendBase = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
+    res.redirect(`${frontendBase}/email-verified?success=true`);
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    const frontendBase = process.env.FRONTEND_BASE_URL || 'http://localhost:5173';
+    res.redirect(`${frontendBase}/email-verified?success=false&error=server_error`);
   }
 });
 
@@ -444,7 +499,7 @@ router.post('/reset-password', generalLimiter, validatePasswordReset, async (req
 });
 
 // GET /api/auth/profile - Get user profile (protected route)
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', auth.requireVerification, async (req, res) => {
   try {
     const userId = req.user.userId;
 
@@ -471,7 +526,8 @@ router.get('/profile', auth, async (req, res) => {
         em_first_name: user.em_first_name,
         em_last_name: user.em_last_name,
         em_relationship: user.em_relationship,
-        em_phone: user.em_phone
+        em_phone: user.em_phone,
+        pre_name: user.pre_name
       }
     });
 
@@ -485,7 +541,7 @@ router.get('/profile', auth, async (req, res) => {
 });
 
 // PUT /api/auth/profile - Update user profile (protected route)
-router.put('/profile', auth, validateProfileUpdate, async (req, res) => {
+router.put('/profile', auth.authenticateToken, validateProfileUpdate, async (req, res) => {
   try {
     // Check for validation errors
     const validationError = handleValidationErrors(req, res);
@@ -514,7 +570,18 @@ router.put('/profile', auth, validateProfileUpdate, async (req, res) => {
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      user: result.user
+      user: {
+        user_id: result.user.user_id,
+        email: result.user.email,
+        first_name: result.user.first_name,
+        last_name: result.user.last_name,
+        phone: result.user.phone,
+        pronouns: result.user.pronouns,
+        user_linkedin: result.user.user_linkedin,
+        user_github: result.user.user_github,
+        is_admin: result.user.is_admin,
+        pre_name: result.user.pre_name
+      }
     });
 
   } catch (error) {
@@ -527,7 +594,7 @@ router.put('/profile', auth, validateProfileUpdate, async (req, res) => {
 });
 
 // PUT /api/auth/change-password - Change password (protected route)
-router.put('/change-password', auth, async (req, res) => {
+router.put('/change-password', auth.authenticateToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -597,13 +664,19 @@ router.put('/change-password', auth, async (req, res) => {
 });
 
 // GET /api/auth/verify-token - Verify if access token is valid (protected route)
-router.get('/verify-token', auth, (req, res) => {
+router.get('/verify-token', auth.authenticateToken, (req, res) => {
   res.json({
     success: true,
     message: 'Token is valid',
     user: {
       userId: req.user.userId,
       email: req.user.email,
+      first_name: req.user.first_name,
+      last_name: req.user.last_name,
+      phone: req.user.phone,
+      pronouns: req.user.pronouns,
+      user_linkedin: req.user.user_linkedin,
+      user_github: req.user.user_github,
       isAdmin: req.user.isAdmin
     }
   });

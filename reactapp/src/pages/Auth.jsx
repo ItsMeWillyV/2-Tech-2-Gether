@@ -12,7 +12,7 @@ const Auth = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
-    // preferred_name: '',
+    preferred_name: '',
     phone: '',
     pronouns: '',
     user_linkedin: '',
@@ -76,6 +76,9 @@ const Auth = () => {
         newErrors.last_name = 'Last name is required'
       } else if (!/^[a-zA-Z\s'-]+$/.test(formData.last_name)) {
         newErrors.last_name = 'Last name must contain only letters, spaces, hyphens, and apostrophes'
+      }
+      if (formData.preferred_name && !/^[a-zA-Z\s'-]*$/.test(formData.preferred_name)) {
+      newErrors.preferred_name = 'Preferred name must contain only letters, spaces, hyphens, and apostrophes'
       }
 
       // Optional emergency contact validation
@@ -151,7 +154,8 @@ const Auth = () => {
             phone: formData.phone || undefined,
             pronouns: formData.pronouns || undefined,
             user_linkedin: formData.user_linkedin || undefined,
-            user_github: formData.user_github || undefined
+            user_github: formData.user_github || undefined,
+            preferred_name: formData.preferred_name || undefined
           }
 
       const response = await fetch(`http://localhost:3000${endpoint}`, {
@@ -166,8 +170,8 @@ const Auth = () => {
 
       if (response.ok) {
         // Use the login function from context
-        if (isLogin && data.tokens?.access_token) {
-          login(data.tokens.access_token, data.user)
+        if (isLogin && data.accessToken) {
+          login(data.accessToken, data.user)
         } else if (!isLogin) {
           // For registration, show success message and switch to login
           setIsLogin(true)
@@ -244,7 +248,8 @@ const Auth = () => {
       phone: '',
       pronouns: '',
       user_linkedin: '',
-      user_github: ''
+      user_github: '',
+      preferred_name: ''
     })
     setErrors({})
   }
@@ -379,6 +384,26 @@ const Auth = () => {
                     )}
                   </div>
                 </div>
+                    {/* ## Add Preferred Name field */}
+                <div>
+                  <label htmlFor="preferred_name" className="block text-sm font-medium text-white mb-2">
+                    Preferred Name
+                  </label>
+                  <input
+                    id="preferred_name"
+                    name="preferred_name"
+                    type="text"
+                    value={formData.preferred_name}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-analog-aquamarine focus:border-transparent transition-all duration-200 text-gray-900 bg-white/95 ${
+                      errors.preferred_name ? 'border-red-300 bg-red-50' : 'border-gray-300 hover:border-analog-aquamarine/50'
+                    }`}
+                    placeholder="What would you like to be called?"
+                  />
+                  {errors.preferred_name && (
+                    <p className="text-red-500 text-xs mt-1 font-medium">{errors.preferred_name}</p>
+                  )}
+                </div>
                   <div className="col-span-2">
                     <p className="mt-2 text-xs text-white/70 bg-white/5 border border-analog-aquamarine/30 rounded-lg px-3 py-2 leading-relaxed">
                       💡 If you are a student, please ensure your first and last name match your school email. If your first name differs, you may set a preferred name below.
@@ -407,7 +432,7 @@ const Auth = () => {
                       <p className="text-red-500 text-xs mt-1 font-medium">{errors.pronouns}</p>
                     )}
                   </div>
-
+                    
                   {/* Phone field */}
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-white mb-2">

@@ -16,9 +16,20 @@ const authenticateToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // You would typically fetch the user from database here
-    // For now, we'll attach the decoded token data
-    req.user = decoded;
+    const db = require('../utils/db');
+    const user = await db.getUserById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    req.user = {
+      ...decoded,
+      ...user,
+      userId: decoded.userId
+    }
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {

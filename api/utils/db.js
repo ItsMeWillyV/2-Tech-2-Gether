@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Login = require('../models/Login');
 const AuthUtils = require('./AuthUtils');
+const crypto = require('crypto');
 
 // Database connection configuration
 const dbConfig = {
@@ -49,30 +50,15 @@ const db = {
         pronouns = null, // optional
         phone = null, // optional
         user_linkedin = null,
-        user_github = null
+        user_github = null,
+        pre_name = null,
       } = userData;
-      
       // Validate required fields
       if (!email || !password || !first_name || !last_name) {
         throw new Error('Email, password, first name, and last name are required fields');
       }
       
-      // Create User instance for validation
-      const userForValidation = new User({
-        email,
-        first_name,
-        last_name,
-        phone,
-        pronouns,
-        user_linkedin,
-        user_github
-      });
-      
-      // Validate user data using User class validation
-      const validation = userForValidation.validateRegistration();
-      if (!validation.isValid) {
-        throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
-      }
+      const cleanedPhone = phone ? phone.replace(/[^\d+]/g, '') : null;
       
       // Check if user already exists (by email)
       const [existingUsers] = await connection.execute(
@@ -94,21 +80,23 @@ const db = {
         throw new Error('Login with this email already exists');
       }
       
-      // Insert new user - fields match ERD schema exactly
       const [userResult] = await connection.execute(
-        `INSERT INTO user (email, first_name, last_name, phone, pronouns, user_linkedin, user_github) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [email, first_name, last_name, phone, pronouns, user_linkedin, user_github]
+        `INSERT INTO user (email, first_name, last_name, phone, pronouns, user_linkedin, user_github, pre_name) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [email, first_name, last_name, cleanedPhone, pronouns, user_linkedin, user_github, pre_name]
       );
       
       const userId = userResult.insertId;
 
       // Hash password and create login entry
       const { hash, salt } = await AuthUtils.hashPassword(password);
-      
+
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    
       await connection.execute(
-        `INSERT INTO login (user_id, username, password, salt, is_admin) VALUES (?, ?, ?, ?, ?)`,
-        [userId, email, hash, salt, 0] // email as username, salt stored separately, is_admin=0 for regular user
+        `INSERT INTO login (user_id, username, password_hash, password_salt, is_admin, email_verification_token, email_verification_expires) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [userId, email, hash, salt, 0, verificationToken, verificationExpires]
       );
 
       await connection.commit();
@@ -122,7 +110,8 @@ const db = {
         phone,
         pronouns,
         user_linkedin,
-        user_github
+        user_github,
+        pre_name
       });
 
       const createdLogin = new Login({
@@ -135,11 +124,13 @@ const db = {
       
       // Return user data with login and tokens
       return {
-        user: createdUser.toPublicJSON(),
-        login: createdLogin.toSafeJSON(),
+        success: true,
+        user: AuthUtils.userSafeJSON(createdUser),
+        login: AuthUtils.loginSafeJson(createdLogin),
+        emailVerificationToken: verificationToken,
         tokens: {
-          access_token: createdLogin.generateJWTToken(),
-          refresh_token: createdLogin.generateRefreshToken()
+          access_token: generateToken(userId),
+          refresh_token: AuthUtils.generateRefreshToken({ user_id: userId })
         }
       };
       
@@ -158,7 +149,7 @@ const db = {
       // Build dynamic update query based on provided fields
       const allowedFields = [
         'email', 'first_name', 'last_name', 'phone', 'org_id', 
-        'pronouns', 'user_linkedin', 'user_github'
+        'pronouns', 'user_linkedin', 'user_github', 'pre_name'
       ];
       const updates = [];
       const values = [];
@@ -174,8 +165,6 @@ const db = {
         throw new Error('No valid fields provided for update');
       }
       
-      // Add updated_at timestamp and userId to values array
-      updates.push('updated_at = NOW()');
       values.push(userId);
       
       // Execute update
@@ -191,7 +180,7 @@ const db = {
       // Return updated user data (without password)
       const [updatedUser] = await connection.execute(
         `SELECT user_id, email, first_name, last_name, phone, org_id, pronouns, 
-         user_linkedin, user_github
+         user_linkedin, user_github, pre_name
          FROM user WHERE user_id = ?`,
         [userId]
       );
@@ -290,14 +279,20 @@ const db = {
         return { success: false, message: 'Email already verified' };
       }
       
-      // Generate new verification token (handled locally, not stored in DB)
-      const newToken = login.setEmailVerificationToken();
-      
-      return { 
+      // Generate new verification token and save to database
+      const newToken = crypto.randomBytes(32).toString('hex');
+      const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await connection.execute(
+        'UPDATE login SET email_verification_token = ?, email_verification_expires = ? WHERE user_id = ?',
+        [newToken, tokenExpires, userData.user_id]
+      );
+
+      return {
         success: true, 
         user: new User(userData), 
         login: login,
-        verificationToken: newToken 
+        emailVerificationToken: newToken 
       };
       
     } catch (error) {
@@ -380,16 +375,21 @@ const db = {
     try {
       // Build dynamic update query based on provided fields
       const allowedFields = [
-        'first_name', 'last_name', 'preferred_name', 'phone', 'pronouns', 
+        'first_name', 'last_name', 'pre_name', 'phone', 'pronouns', 
         'user_linkedin', 'user_github', 'school'
       ];
       const updates = [];
       const values = [];
-      
+
+      if (updateData.preferred_name !== undefined) {
+      updateData.pre_name = updateData.preferred_name;
+      delete updateData.preferred_name;
+      }
+
       for (const [key, value] of Object.entries(updateData)) {
         if (allowedFields.includes(key) && value !== undefined) {
           updates.push(`${key} = ?`);
-          values.push(value);
+          values.push(value || null);
         }
       }
       
@@ -397,8 +397,6 @@ const db = {
         throw new Error('No valid fields provided for update');
       }
       
-      // Add updated_at timestamp and userId to values array
-      updates.push('updated_at = NOW()');
       values.push(userId);
       
       // Execute update
@@ -412,7 +410,12 @@ const db = {
       }
       
       // Return updated user
-      return await this.getUserById(userId);
+      const updatedUser = await db.getUserById(userId);
+      return{
+        success: true,
+        message: 'Profile updated successfully',
+        user: updatedUser
+      }
       
     } catch (error) {
       throw error;
@@ -432,7 +435,7 @@ const db = {
       
       // Update login with new password and salt
       const [result] = await connection.execute(
-        'UPDATE login SET password = ?, salt = ?, updated_at = NOW() WHERE user_id = ?',
+        'UPDATE login SET password_hash = ?, password_salt = ? WHERE user_id = ?',
         [hash, salt, userId]
       );
       
@@ -457,7 +460,7 @@ const db = {
     const connection = await pool.getConnection();
     try {
       const [result] = await connection.execute(
-        'UPDATE login SET email_is_verified = ?, updated_at = NOW() WHERE user_id = ?',
+        'UPDATE login SET email_is_verified = ? WHERE user_id = ?',
         [isVerified ? 1 : 0, userId]
       );
       
@@ -502,7 +505,7 @@ const db = {
     try {
       // Get user and login data
       const [userRows] = await connection.execute(
-        'SELECT u.*, l.user_id as login_user_id, l.username, l.password, l.salt, l.is_admin, l.email_is_verified FROM user u INNER JOIN login l ON u.user_id = l.user_id WHERE l.username = ?',
+        'SELECT u.*, l.user_id as login_user_id, l.username, l.password_hash, l.password_salt, l.is_admin FROM user u INNER JOIN login l ON u.user_id = l.user_id WHERE l.username = ?',
         [email]
       );
       
@@ -511,18 +514,18 @@ const db = {
       }
       
       const userData = userRows[0];
-      
+
       // Create Login instance with salt for password verification
       const login = new Login({
         user_id: userData.login_user_id,
         username: userData.username,
-        password: userData.password,
-        salt: userData.salt,
+        password_hash: userData.password_hash,
+        password_salt: userData.password_salt,
         is_admin: userData.is_admin
       });
       
       // Verify password using stored salt
-      const isPasswordValid = await login.verifyPassword(password);
+      const isPasswordValid = await AuthUtils.verifyPassword(password, login.password_hash, login.password_salt);
       if (!isPasswordValid) {
         return { success: false, message: 'Invalid credentials' };
       }
@@ -536,7 +539,8 @@ const db = {
         phone: userData.phone,
         pronouns: userData.pronouns,
         user_linkedin: userData.user_linkedin,
-        user_github: userData.user_github
+        user_github: userData.user_github,
+        pre_name: userData.pre_name
       });
       
       return {
@@ -550,6 +554,32 @@ const db = {
     } finally {
       connection.release();
     }
+  },
+
+  verifyEmailToken: async (token) => {
+  const connection = await pool.getConnection();
+  try {
+    const [rows] = await connection.execute(
+      'SELECT user_id FROM login WHERE email_verification_token = ? AND email_verification_expires > NOW()',
+      [token]
+    );
+    
+    if (rows.length === 0) {
+      return { success: false, message: 'Invalid or expired verification token' };
+    }
+    
+    // Mark email as verified and clear token
+    await connection.execute(
+      'UPDATE login SET email_is_verified = TRUE, email_verification_token = NULL, email_verification_expires = NULL WHERE user_id = ?',
+      [rows[0].user_id]
+    );
+    
+    return { success: true, message: 'Email verified successfully' };
+  } catch (error) {
+    throw error;
+  } finally {
+    connection.release();
+  }
   },
 };
 

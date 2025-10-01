@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const email = require('./email');
 
 class AuthUtils {
 
@@ -87,6 +88,30 @@ class AuthUtils {
   // Generate secure session ID
   static generateSessionId() {
     return crypto.randomBytes(64).toString('hex');
+  }
+
+  static userSafeJSON(user){
+    return {
+      user_id: user.user_id,
+      email: user.email,  
+      first_name: user.first_name,
+      last_name: user.last_name,
+      phone: user.phone,
+      pronouns: user.pronouns,
+      user_linkedin: user.user_linkedin,
+      user_github: user.user_github,
+      pre_name: user.pre_name
+    };
+  }
+
+  static loginSafeJson(login){
+    return {
+      login_id: login.login_id,
+      user_id: login.user_id,
+      username: login.username,
+      is_admin: login.is_admin,
+      // email_verified: login.email_verified
+    };
   }
 }
 

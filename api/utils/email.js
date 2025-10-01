@@ -14,21 +14,21 @@ function enableDebugIfRequested(options) {
 function getTransporter() {
   if (transporter) return transporter;
 
-  const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } = process.env;
-
-  if (!EMAIL_HOST || !EMAIL_PORT || !EMAIL_USER || !EMAIL_PASSWORD) {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD } = process.env;
+  
+  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
     console.warn('[EmailService] Missing email environment variables. Will attempt ethereal fallback (dev only).');
     return null; // We'll create ethereal lazily in send function if allowed
   }
 
   transporterType = 'env';
   transporter = nodemailer.createTransport(enableDebugIfRequested({
-    host: EMAIL_HOST,
-    port: Number(EMAIL_PORT),
-    secure: Number(EMAIL_PORT) === 465, // true for 465
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT),
+    secure: Number(SMTP_PORT) === 465, // true for 465
     auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASSWORD
+      user: SMTP_USER,
+      pass: SMTP_PASSWORD
     },
     tls: {
       // Allow self-signed certs in dev; remove in production
@@ -61,7 +61,7 @@ function buildVerificationEmail(user, token) {
         <p style="margin:12px 0 0; font-size:15px;">Just one more step to activate your account.</p>
       </div>
       <div style="background:#fff; margin-top:20px; padding:32px; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.08);">
-        <p style="font-size:16px; color:#333; margin-top:0;">Hi ${user.getPreferredName() || 'there'},</p>
+        <p style="font-size:16px; color:#333; margin-top:0;">Hi there},</p>
         <p style="font-size:15px; color:#444; line-height:1.55;">Thanks for creating an account! Please confirm your email address so we know it's really you.</p>
         <div style="text-align:center; margin:28px 0;">
           <a href="${verifyApiLink}" style="background:#667eea; color:#fff; padding:14px 26px; font-size:16px; text-decoration:none; border-radius:8px; display:inline-block; font-weight:600;">Verify Email</a>
@@ -122,13 +122,13 @@ async function sendVerificationEmail(user, token) {
     };
 
     const info = await tx.sendMail({
-      from: { name: fromName, address: process.env.EMAIL_USER },
+      from: { name: fromName, address: process.env.SMTP_USER },
       to: user.email,
       subject,
       html,
       text,
       headers,
-      replyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_USER
+      replyTo: process.env.EMAIL_REPLY_TO || process.env.SMTP_USER
     });
     console.log(`[EmailService] Verification email sent to ${user.email}. MessageId=${info.messageId}`);
     console.log('[EmailService] Delivery meta:', {
@@ -156,9 +156,9 @@ module.exports = {
   getEmailDebugInfo: () => ({
     transporterInitialized: !!transporter,
     transporterType,
-    envHostDefined: !!process.env.EMAIL_HOST,
-    envPortDefined: !!process.env.EMAIL_PORT,
-    envUserDefined: !!process.env.EMAIL_USER,
+    envHostDefined: !!process.env.SMTP_HOST,
+    envPortDefined: !!process.env.SMTP_PORT,
+    envUserDefined: !!process.env.SMTP_USER,
     debugEnabled: process.env.EMAIL_DEBUG === 'true'
   })
 };

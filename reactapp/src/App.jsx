@@ -9,7 +9,7 @@ import ComingSoon from './pages/ComingSoon'
 import CaptureTheFlag from './pages/CaptureTheFlag'
 import Events from './pages/Events'
 import Auth from './pages/Auth'
-
+import UserProfile from './pages/UserProfile'
 function App() {
   return (
     <AuthProvider>
@@ -24,6 +24,7 @@ function App() {
           <Route path="/events/capture-the-flag" element={<CaptureTheFlag />} />
           <Route path="/sponsors" element={<Sponsors />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Routes>
         <Footer />
       </Router>

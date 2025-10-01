@@ -47,6 +47,13 @@ const validateRegistration = [
     .trim()
     .isLength({ max: 200 })
     .withMessage('GitHub URL must be less than 200 characters'),
+
+  body('preferred_name') 
+    .optional()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Preferred name must be between 1 and 50 characters')
+    .trim()
+    .escape(),
 ];
 
 // Validation rules for user login

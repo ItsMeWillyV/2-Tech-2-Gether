@@ -101,6 +101,14 @@ function Header() {
                   Login
                 </Link>
               )}
+              <div className="flex items-center space-x-2">
+                <Link
+                  to="/profile"
+                  className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-analog-yellow to-binary-orange hover:from-binary-orange hover:to-analog-yellow text-white rounded-md font-medium transition-all duration-200 text-xs sm:text-sm"
+                >
+                  Profile
+                </Link>
+              </div>
             </div>
           </div>
         </div>
