@@ -438,7 +438,7 @@ function Home() {
             icon={FaFlag}
             iconColor="text-yaml-yellow"
             title="Ozzy's Cyber Heist"
-            description="Join us for our first annual Capture the Flag at Ozarks Tech! Sign-up opens September 10th and closes November 1st. Begins on Friday, November 14th; time & location TBD."
+            description="Join us for our first annual Capture the Flag at Ozarks Tech! Registration is opening soon - join our mailing list to be notified when it opens. The event begins on Friday, November 14th; time & location TBD."
             borderColor="border-t-yaml-yellow"
             button={{
               text: "View Events",

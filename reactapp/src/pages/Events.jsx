@@ -59,13 +59,14 @@ function Events() {
                 { icon: FaClock, text: "Time TBD", color: "text-yaml-yellow" },
                 { icon: FaMapMarkerAlt, text: "Springfield Campus - Room TBD", color: "text-yaml-yellow" }
               ]}
-              description="Join us for our first annual Capture the Flag at Ozarks Tech! Test your cybersecurity skills in this exciting competition. Sign-up opens September 10th and closes November 1st."
-              additionalInfo={<><strong>Registration:</strong> September 10th - November 1st</>}
+              description="Join us for our first annual Capture the Flag at Ozarks Tech! Test your cybersecurity skills in this exciting competition. Registration is opening soon - join our mailing list to be notified when it opens."
+              additionalInfo={<><strong>Registration:</strong> TBA, Join our mailing list to be notified. </>}
               button={{
-                text: "Register",
+                text: "Join Mailing List",
                 icon: FaInfoCircle,
                 className: "bg-yaml-yellow text-binary-blue hover:bg-analog-aquamarine hover:text-white",
-                href: "/events/capture-the-flag"
+                external: true,
+                href: "https://forms.cloud.microsoft/r/JkXsy6fDrQ?origin=lprLink"
               }}
             />
 
