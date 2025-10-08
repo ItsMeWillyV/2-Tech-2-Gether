@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FaCode, FaRocket, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaFlag, FaSearch} from 'react-icons/fa'
+import { FaCode, FaInfoCircle, FaUsers, FaCalendarAlt, FaGithub, FaLinkedin, FaExternalLinkAlt, FaGlobe, FaMapMarkerAlt, FaClock, FaFlag, FaSearch } from 'react-icons/fa'
 import Hero from '../components/Hero'
 import Card from '../components/Card'
 import eventThumbnail from '../assets/thumbnails/SRC.png'
 import event2Thumbnail from '../assets/thumbnails/JenCollins.jpg'
+import event3Thumbnail from '../assets/thumbnails/linkedIn.png'
+import event4Thumbnail from '../assets/thumbnails/picoCTF.png'
 import placeholderThumbnail from '../assets/thumbnails/placeholder.png'
 import diegoPortrait from '../assets/portraits/diego_haro.png'
 import lauraPortrait from '../assets/portraits/laura_kirkpatrick.png'
@@ -25,14 +27,14 @@ function Home() {
       try {
         setLoading(true);
         const response = await fetch('/meetings.json');
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         const meetingsData = data.meetings || [];
-        
+
         // Sort meetings by date (upcoming first)
         const currentDate = new Date();
         const sortedMeetings = meetingsData
@@ -66,9 +68,9 @@ function Home() {
         if (upcomingMeeting) {
           const nextMeetingDate = upcomingMeeting.dateObj.toDateString();
           secondMeetingOnSameDate = sortedMeetings.find(meeting => {
-            return meeting !== upcomingMeeting && 
-                   meeting.dateObj.toDateString() === nextMeetingDate &&
-                   meeting.dateObj >= currentDate;
+            return meeting !== upcomingMeeting &&
+              meeting.dateObj.toDateString() === nextMeetingDate &&
+              meeting.dateObj >= currentDate;
           });
         }
 
@@ -124,14 +126,20 @@ function Home() {
     if (thumbnailPath.includes('JenCollins.jpg')) {
       return event2Thumbnail;
     }
+    if (thumbnailPath.includes('linkedIn.png')) {
+      return event3Thumbnail;
+    }
+    if (thumbnailPath.includes('picoCTF.png')) {
+      return event4Thumbnail;
+    }
     // Default to placeholder if thumbnail not found
     return placeholderThumbnail;
   };
 
   const teamMembers = [
-    { 
-      name: 'Willy Vanderpool', 
-      image: willyPortrait, 
+    {
+      name: 'Willy Vanderpool',
+      image: willyPortrait,
       role: 'President',
       pronouns: 'She/Her',
       bio: "Hello there! I'm Willy Vanderpool, an 18-year-old Computer Information Science student at Ozarks Tech. I'm currently working in Ozarks Tech's Web Services department, and I'm also the president of Tech2Gether. My passion for programming started long before college, sparked by curiosity and a love for creating things from scratch. Over the years, I've gained experience with HTML, CSS, JavaScript, C#, Java, and Lua, and recently I've been diving deeper into modern frameworks such as React, TailwindCSS, and .NET MAUI. Outside of programming, some of my hobbies include drawing pixel art, playing videogames, and collecting Pokémon cards. I've also been learning German since around mid January 2025.",
@@ -141,28 +149,28 @@ function Home() {
         { icon: FaGlobe, label: 'Website', url: 'https://willy-v.com/' }
       ]
     },
-    { 
-      name: 'Paul Bute', 
-      image: paulPortrait, 
+    {
+      name: 'Paul Bute',
+      image: paulPortrait,
       role: 'Vice President',
       pronouns: 'He/They',
       bio: "My name is Paul Bute, and I'm a CIS student at Ozarks Tech. My goals for the club this year are to boost engagement and engage students in programming challenges and competitions. As of the beginning of the Fall semester, it will be my 2nd year at Ozarks Tech. I'm mainly a Web Developer, with experience in C# ASP.NET apps, as well as JS & Vue. I enjoy learning new skills and exploring how problems can be solved in more than one way. I enjoy reading, gaming & baking in my free time. Before Ozarks Tech I was part of the workforce for 7 years. I have experience in warehouse picking, shipping & handling, management and customer service. I also spent four years in the hospitality industry, and a year as a Tower Technician doing structural modifications on cell phone towers.",
       buttons: [
-        { icon: FaGithub, label: 'GitHub', url: 'https://github.com/Smashslice'}
+        { icon: FaGithub, label: 'GitHub', url: 'https://github.com/Smashslice' }
       ]
     },
-    { 
-      name: 'Diego Haro', 
-      image: diegoPortrait, 
+    {
+      name: 'Diego Haro',
+      image: diegoPortrait,
       role: 'Treasurer',
       pronouns: 'He/Him',
       bio: "Hi, I'm Diego. I've been a student at Ozarks Tech since fall 2024, and after attending a few Tech2Gether meetings, I knew I wanted to contribute my time and energy to this club. Since I've been at Ozarks Tech, I've been learning and honing my skills in C#, Python, and Web Development. I'm currently pursuing an Associate's degree in CIS, but I may switch to CSC and pursue a Bachelor's degree instead. My hobbies include weightlifting, cooking, and coding.",
       buttons: [
       ]
     },
-    { 
-      name: 'Laura Kirkpatrick', 
-      image: lauraPortrait, 
+    {
+      name: 'Laura Kirkpatrick',
+      image: lauraPortrait,
       role: 'Secretary',
       pronouns: 'She/Her',
       bio: "Hiya! My name is Laura, and I'm the Tech2Gether secretary for the 2025-2026 school year. I'm currently working on my Associate's degree in Computer Science at Ozarks Tech. I have enjoyed all that I've learned in my time at Ozarks Tech: Python, C#, .NET MAUI, Java, and Web Development. In my free time, I love building Magic: The Gathering decks, writing/playing Dungeons and Dragons with friends, and playing/building videogames. I'll be graduating in the Spring 2026 Semester (hopefully) so look out for officer nominations in the spring to get my job! I'm so excited to help Tech2Gether continue its outreach to students by providing fun educational, networking, and programming events to members and all Ozarks Tech students alike! It's going to be a fun year.",
@@ -183,9 +191,9 @@ function Home() {
         <meta property="og:description" content="Join our vibrant tech community for networking, learning, and innovation at Ozarks Tech" />
         <meta property="og:type" content="website" />
       </Helmet>
-      
+
       {/* Hero Section */}
-      <Hero/>     
+      <Hero />
 
       {/* About Section */}
       <div className="container mx-auto px-4 py-20 relative z-10">
@@ -194,8 +202,8 @@ function Home() {
             What is Tech&#8203;2&#8203;Gether?
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-            Tech2Gether is the tech club at Ozarks Technical Community College (Ozarks Tech). 
-            We focus on bringing together students interested in technology, programming, and cybersecurity. 
+            Tech2Gether is the tech club at Ozarks Technical Community College (Ozarks Tech).
+            We focus on bringing together students interested in technology, programming, and cybersecurity.
             We organize workshops and tech talks to help students grow their skills and engage with industry professionals.
           </p>
         </div>
@@ -245,16 +253,16 @@ function Home() {
                     </span>
                   )}
                 </div>
-                <div 
+                <div
                   className="text-base mb-6 opacity-95 leading-relaxed"
-                  dangerouslySetInnerHTML={{ 
-                    __html: ongoingMeeting.description 
+                  dangerouslySetInnerHTML={{
+                    __html: ongoingMeeting.description
                   }}
                 />
                 {ongoingMeeting.schedule && (
                   <div className="mb-6 p-3 bg-black bg-opacity-20 rounded-lg">
                     <h5 className="font-semibold mb-2">Schedule:</h5>
-                    <div 
+                    <div
                       className="text-sm opacity-90"
                       dangerouslySetInnerHTML={{ __html: ongoingMeeting.schedule }}
                     />
@@ -276,9 +284,9 @@ function Home() {
                 </div>
               </div>
               <div className="flex-shrink-0">
-                <img 
-                  src={getThumbnailImage(ongoingMeeting.thumbnail)} 
-                  alt={ongoingMeeting.title} 
+                <img
+                  src={getThumbnailImage(ongoingMeeting.thumbnail)}
+                  alt={ongoingMeeting.title}
                   className="w-64 h-40 object-contain rounded-xl"
                 />
               </div>
@@ -289,7 +297,7 @@ function Home() {
                 <FaCalendarAlt className="inline mr-3 text-yaml-yellow" />
                 Next Event{secondMeeting ? 's' : ''}: {formatEventDate(nextMeeting.date)}
               </h3>
-              
+
               {/* First Meeting */}
               <div className="flex flex-col md:flex-row items-center gap-8 mb-6">
                 <div className="flex-1">
@@ -313,16 +321,16 @@ function Home() {
                       {formatEventTime(nextMeeting.date)}
                     </span>
                   </div>
-                  <div 
+                  <div
                     className="text-base mb-4 opacity-95 leading-relaxed"
-                    dangerouslySetInnerHTML={{ 
-                      __html: nextMeeting.description 
+                    dangerouslySetInnerHTML={{
+                      __html: nextMeeting.description
                     }}
                   />
                   {nextMeeting.schedule && (
                     <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-lg">
                       <h5 className="font-semibold mb-2">Schedule:</h5>
-                      <div 
+                      <div
                         className="text-sm opacity-90"
                         dangerouslySetInnerHTML={{ __html: nextMeeting.schedule }}
                       />
@@ -344,9 +352,9 @@ function Home() {
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  <img 
-                    src={getThumbnailImage(nextMeeting.thumbnail)} 
-                    alt={nextMeeting.title} 
+                  <img
+                    src={getThumbnailImage(nextMeeting.thumbnail)}
+                    alt={nextMeeting.title}
                     className="w-64 h-40 object-contain rounded-xl"
                   />
                 </div>
@@ -378,16 +386,16 @@ function Home() {
                           {formatEventTime(secondMeeting.date)}
                         </span>
                       </div>
-                      <div 
+                      <div
                         className="text-base mb-4 opacity-95 leading-relaxed"
-                        dangerouslySetInnerHTML={{ 
-                          __html: secondMeeting.description 
+                        dangerouslySetInnerHTML={{
+                          __html: secondMeeting.description
                         }}
                       />
                       {secondMeeting.schedule && (
                         <div className="mb-4 p-3 bg-black bg-opacity-20 rounded-lg">
                           <h5 className="font-semibold mb-2">Schedule:</h5>
-                          <div 
+                          <div
                             className="text-sm opacity-90"
                             dangerouslySetInnerHTML={{ __html: secondMeeting.schedule }}
                           />
@@ -409,9 +417,9 @@ function Home() {
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <img 
-                        src={getThumbnailImage(secondMeeting.thumbnail)} 
-                        alt={secondMeeting.title} 
+                      <img
+                        src={getThumbnailImage(secondMeeting.thumbnail)}
+                        alt={secondMeeting.title}
                         className="w-64 h-40 object-contain rounded-xl"
                       />
                     </div>
@@ -438,13 +446,14 @@ function Home() {
             icon={FaFlag}
             iconColor="text-yaml-yellow"
             title="Ozzy's Cyber Heist"
-            description="Join us for our first annual Capture the Flag at Ozarks Tech! Registration is opening soon - join our mailing list to be notified when it opens. The event begins on Friday, November 14th; time & location TBD."
+            description="Join us for our first annual Capture the Flag at Ozarks Tech! Registration is opening soon - join our mailing list to be notified when it opens."
             borderColor="border-t-yaml-yellow"
             button={{
-              text: "View Events",
-              href: "/events",
-              icon: FaSearch,
-              className: "bg-yaml-yellow text-binary-blue hover:bg-analog-aquamarine hover:text-white"
+              text: "Join Mailing List",
+              icon: FaInfoCircle,
+              className: "bg-yaml-yellow text-binary-blue hover:bg-analog-aquamarine hover:text-white",
+              external: true,
+              href: "https://forms.cloud.microsoft/r/JkXsy6fDrQ?origin=lprLink"
             }}
           />
           <Card
@@ -460,7 +469,7 @@ function Home() {
               className: "bg-analog-aquamarine text-white hover:bg-binary-blue"
             }}
           />
-          
+
           <Card
             icon={FaGlobe}
             iconColor="text-binary-blue"
@@ -490,9 +499,9 @@ function Home() {
               <div key={index} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                 <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
                   <div className="flex-shrink-0">
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
+                    <img
+                      src={member.image}
+                      alt={member.name}
                       className="w-32 h-32 rounded-full object-cover shadow-lg border-4 border-analog-aquamarine"
                     />
                   </div>
@@ -546,18 +555,17 @@ function Home() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...meetings].reverse().map((meeting, index) => {
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); 
+                today.setHours(0, 0, 0, 0);
                 const meetingDate = new Date(meeting.dateObj);
-                meetingDate.setHours(0, 0, 0, 0); 
+                meetingDate.setHours(0, 0, 0, 0);
                 const isPast = meetingDate < today;
                 const isUpcoming = meeting === nextMeeting;
                 const isOngoing = ongoingMeeting && meeting === ongoingMeeting;
                 return (
-                  <div 
-                    key={index} 
-                    className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 ${
-                      isUpcoming ? 'ring-2 ring-yaml-yellow' : ''
-                    } ${isOngoing ? 'ring-2 ring-analog-aquamarine' : ''} ${isPast ? 'opacity-75' : ''}`}
+                  <div
+                    key={index}
+                    className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 ${isUpcoming ? 'ring-2 ring-yaml-yellow' : ''
+                      } ${isOngoing ? 'ring-2 ring-analog-aquamarine' : ''} ${isPast ? 'opacity-75' : ''}`}
                   >
                     {isOngoing && (
                       <div className="bg-analog-aquamarine text-white px-3 py-1 rounded-full text-sm font-semibold mb-4 inline-block">
@@ -575,9 +583,9 @@ function Home() {
                       </div>
                     )}
                     <div className="mb-4">
-                      <img 
-                        src={getThumbnailImage(meeting.thumbnail)} 
-                        alt={meeting.title} 
+                      <img
+                        src={getThumbnailImage(meeting.thumbnail)}
+                        alt={meeting.title}
                         className="w-full h-32 object-contain rounded-lg shadow-inner"
                       />
                     </div>
@@ -611,10 +619,10 @@ function Home() {
                         </div>
                       )}
                     </div>
-                    <div 
+                    <div
                       className="text-gray-700 text-sm mb-4 leading-relaxed"
-                      dangerouslySetInnerHTML={{ 
-                        __html: meeting.description 
+                      dangerouslySetInnerHTML={{
+                        __html: meeting.description
                       }}
                     />
                     {meeting.buttons && meeting.buttons.length > 0 && (

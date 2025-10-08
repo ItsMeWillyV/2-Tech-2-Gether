@@ -55,7 +55,7 @@ function Events() {
               subtitleText="text-binary-blue"
               borderColor="border-t-yaml-yellow"
               details={[
-                { icon: FaCalendarAlt, text: "Friday, November 14th", color: "text-yaml-yellow" },
+                { icon: FaCalendarAlt, text: "April 2026", color: "text-yaml-yellow" },
                 { icon: FaClock, text: "Time TBD", color: "text-yaml-yellow" },
                 { icon: FaMapMarkerAlt, text: "Springfield Campus - Room TBD", color: "text-yaml-yellow" }
               ]}

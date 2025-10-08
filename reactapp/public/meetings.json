@@ -69,7 +69,7 @@
         }
       ]
     },
-        {
+    {
       "title": "Flipping the Script: Stories & Skill-Building from Cybersecurity Conferences",
       "thumbnail": "img/thumbnails/JenCollins.jpg",
       "date": "September 17 2025 18:45:00 GMT-0500",
@@ -81,6 +81,31 @@
         {
           "text": "RSVP",
           "link": "https://forms.office.com/Pages/ResponsePage.aspx?id=drq33vxyB0yDPxYotekhaNhghODwk3NEh9FML_kcXP9UNlpZU1M5VDdaMDVVNDZSSVNQWFJVNjdKWi4u"
+        }
+      ]
+    },
+    {
+      "title": "Scary-good Networking  (LinkedIn Workshop)",
+      "thumbnail": "img/thumbnails/linkedIn.png",
+      "date": "October 15 2025 17:00:00 GMT-0500",
+      "speaker": "TBA",
+      "description": "Learn how to craft a LinkedIn profile so impressive it'll send shivers down your spine! Whether you're just getting started or already have a profile, you'll leave with tips and tricks to make your professional presence truly haunting! (in the best way)\u003Cbr\u003EWe will also have a photographer on the scene to provide quality professional headshots for your new/improved profile!",
+      "location": "PMC 232",
+      "schedule": "",
+      "buttons": []
+    },
+    {
+      "title": "Intro to Capture the Flag (CTF Workshop)",
+      "thumbnail": "img/thumbnails/picoCTF.png",
+      "date": "October 15 2025 18:45:00 GMT-0500",
+      "speaker": "Jennifer Collins",
+      "description": "Put your Cybersecurity skills to the test! We'll be practicing PicoCTF challenges to help sharpen your skills and prepare you for Ozzy's Cyber Heist - our very own CTF - next April.\u003Cbr\u003E\u003Cbr\u003EAll skill levels are welcome!\u003Cbr\u003E\u003Cbr\u003ENeed a hand? Don't worry! We will be there to offer help and walkthroughs for challenges we've already solved, so you can learn how to approach them step by step!\u003Cbr\u003E\u003Cbr\u003ESo come for the pizza, stay for the networking, and leave with new knowledge that'll scare recruiters... in a good way!",
+      "location": "PMC 232",
+      "schedule": "5:00 PM - LinkedIn Workshop Begins\u003Cbr\u003E6:15 PM - picoCTF Workshop Begins\u003Cbr\u003E7:15 PM - Meeting Ends",
+      "buttons": [
+        {
+          "text": "RSVP",
+          "link": "https://forms.office.com/r/kmPGq2ps8J"
         }
       ]
     }
